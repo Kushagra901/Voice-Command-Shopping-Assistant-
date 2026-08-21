@@ -1,5 +1,9 @@
 import * as dotenv from "dotenv";
-dotenv.config();
+import path from "path";
+// Resolve .env from workspace root (one level up from server/)
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+// Also try parent directory in case CWD is server/
+dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
 
 import { createApp } from "./app.js";
 import { initDb } from "./data/db.js";

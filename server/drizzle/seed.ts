@@ -1,5 +1,7 @@
 import * as dotenv from "dotenv";
-dotenv.config();
+import { fileURLToPath } from "url";
+import path from "path";
+dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../.env") });
 
 import { rawClient, initDb } from "../src/data/db.js";
 import { logger } from "../src/utils/logger.js";
