@@ -15,10 +15,15 @@ build/
 
 # Database files
 *.db
+*.db-*
 *.db-journal
+*.db-shm
+*.db-wal
 *.sqlite
+*.sqlite-*
 *.sqlite-journal
 .drizzle/
+local.db*
 
 # Logs & scratch files
 npm-debug.log*
