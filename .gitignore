@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables & secrets (CRITICAL: NEVER COMMIT .env)
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+.output/
+
+# Database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+.drizzle/
+
+# Logs & scratch files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+scratch/
+*.log
+
+# Testing coverage
+coverage/
+.nyc_output/
+
+# IDE & OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
