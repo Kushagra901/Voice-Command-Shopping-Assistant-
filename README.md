@@ -340,6 +340,8 @@ See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for step-by-step instructions with exact 
 
 **Deterministic parser over LLM:** For an 8-hour scope, a rule-based parser with Hinglish normalization is more reliable and demoable than prompt engineering an LLM — and it ships without needing API keys. The parser module has a clear interface boundary so an LLM implementation can be swapped in later.
 
+**No authentication:** The assignment scopes this as a single-user shopping list demo. Authentication was deliberately omitted to focus build time on the NLU parser, voice UX, and recommendation engine. A production version would add JWT-based auth with per-user list isolation via row-level security on the Turso database.
+
 ---
 
 ## 📄 License
