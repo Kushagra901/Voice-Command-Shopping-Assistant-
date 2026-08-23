@@ -128,7 +128,7 @@ describe("App Component UI & Navigation Suite", () => {
     );
 
     // Open via Header Palette button
-    const paletteBtn = screen.getByRole("button", { name: /open command palette/i });
+    const paletteBtn = screen.getByRole("button", { name: /open command palette \(ctrl\+k\)/i });
     fireEvent.click(paletteBtn);
 
     // Palette modal dialog should be visible

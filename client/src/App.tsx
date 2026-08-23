@@ -574,18 +574,31 @@ export function App() {
                 value={manualText}
                 onChange={(e) => setManualText(e.target.value)}
                 aria-label="Text command input"
-                className="w-full pl-4 pr-10 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner"
+                className="w-full pl-4 pr-24 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner"
               />
-              {manualText && (
-                <button
-                  type="button"
-                  onClick={() => setManualText("")}
-                  aria-label="Clear manual input"
-                  className="p-1 rounded-lg text-slate-400 hover:text-white absolute right-2 top-1.5 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+              <div className="absolute right-2 top-1.5 flex items-center gap-1.5">
+                {!manualText && (
+                  <button
+                    type="button"
+                    onClick={commandPalette.open}
+                    aria-label="Open Command Palette"
+                    className="cursor-pointer text-[10px] px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 font-mono hidden sm:flex items-center gap-1 transition"
+                  >
+                    <span>⌘K</span>
+                    <span className="text-[9px] text-slate-400">Palette</span>
+                  </button>
+                )}
+                {manualText && (
+                  <button
+                    type="button"
+                    onClick={() => setManualText("")}
+                    aria-label="Clear manual input"
+                    className="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
             <button
               type="submit"
