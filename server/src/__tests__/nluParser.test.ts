@@ -86,4 +86,19 @@ describe("Deterministic NLU Parser (AGENTS.md §8 Requirements)", () => {
     expect(result.brand).toBe("Amul");
     expect(result.quantity).toBe(12);
   });
+
+  it("should parse 'Undo that' and revert commands (AGENTS.md §6.5)", () => {
+    const undo1 = parseCommand("Undo that");
+    expect(undo1.intent).toBe("UNDO");
+    expect(undo1.confidence).toBeGreaterThanOrEqual(0.95);
+
+    const undo2 = parseCommand("take that back");
+    expect(undo2.intent).toBe("UNDO");
+
+    const undo3 = parseCommand("revert");
+    expect(undo3.intent).toBe("UNDO");
+
+    const undo4 = parseCommand("oops");
+    expect(undo4.intent).toBe("UNDO");
+  });
 });

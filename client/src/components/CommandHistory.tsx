@@ -40,7 +40,7 @@ export function CommandHistory({ logs, onClear }: CommandHistoryProps) {
                 onClear();
               }}
               aria-label="Clear audit history"
-              className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded hover:bg-rose-950/40 flex items-center gap-1 cursor-pointer"
+              className="text-xs text-rose-400 hover:text-rose-300 px-2.5 py-1 rounded-xl hover:bg-rose-950/40 flex items-center justify-center gap-1 cursor-pointer min-h-[44px] min-w-[44px]"
             >
               <Trash2 className="w-3.5 h-3.5" />
               Clear

@@ -74,7 +74,7 @@ describe("App Component UI & Navigation Suite", () => {
       </QueryClientProvider>
     );
 
-    expect(screen.getByText("Voice Shopping Assistant")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: /voice shopping assistant/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /start voice command/i })).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/type a command/i)).toBeInTheDocument();
   });
@@ -112,11 +112,83 @@ describe("App Component UI & Navigation Suite", () => {
     const input = screen.getByPlaceholderText(/type a command/i);
     fireEvent.change(input, { target: { value: "add 2 bottles of milk" } });
 
-    const submitBtn = screen.getByRole("button", { name: /submit command/i });
+    const submitBtn = screen.getByRole("button", { name: /submit text command|send/i });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
       expect(api.parseAndExecuteCommand).toHaveBeenCalledWith("add 2 bottles of milk", true);
+    });
+  });
+
+  it("opens Command Palette on Ctrl+K or button click and executes command", async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    );
+
+    // Open via Header Palette button
+    const paletteBtn = screen.getByRole("button", { name: /open command palette/i });
+    fireEvent.click(paletteBtn);
+
+    // Palette modal dialog should be visible
+    const paletteDialog = screen.getByRole("dialog", { name: /command palette/i });
+    expect(paletteDialog).toBeInTheDocument();
+
+    // Select Add Milk from palette
+    const addMilkOption = screen.getByText("Add Milk");
+    fireEvent.click(addMilkOption);
+
+    await waitFor(() => {
+      expect(api.parseAndExecuteCommand).toHaveBeenCalledWith("Add 2 bottles of milk", true);
+    });
+  });
+
+  it("renders shopping list loading skeleton during initial fetch", async () => {
+    let resolveItemsPromise: (items: unknown[]) => void;
+    const itemsPromise = new Promise((resolve) => {
+      resolveItemsPromise = resolve;
+    });
+
+    (api.getItems as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(itemsPromise);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    );
+
+    // Verify skeleton container is in the document while query is loading
+    expect(screen.getByTestId("shopping-list-skeleton")).toBeInTheDocument();
+
+    // Resolve items
+    resolveItemsPromise!([]);
+
+    await waitFor(() => {
+      expect(screen.getByText("Your shopping list is empty")).toBeInTheDocument();
+    });
+  });
+
+  it("displays the offline mode banner when disconnected and hides it on reconnect", async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    );
+
+    // Trigger offline event
+    fireEvent(window, new Event("offline"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Offline Mode Active")).toBeInTheDocument();
+      expect(screen.getByText(/You are working offline/i)).toBeInTheDocument();
+    });
+
+    // Trigger online event
+    fireEvent(window, new Event("online"));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Offline Mode Active")).not.toBeInTheDocument();
     });
   });
 });

@@ -128,4 +128,56 @@ describe("Shopping List Service & Duplicate Merging (AGENTS.md §8)", () => {
     const finalItems = await shoppingListService.getAll();
     expect(finalItems.length).toBe(0);
   });
+
+  it("should support 'Undo that' for adding, merging, updating, and deleting (AGENTS.md §6.5)", () => {
+    return (async () => {
+      // 1. Test Undo for newly added item
+      await shoppingListService.add({
+        name: "Eggs",
+        quantity: 12,
+        unit: "item"
+      });
+      expect((await shoppingListService.getAll()).length).toBe(1);
+
+      const undoAdd = await shoppingListService.executeUndo();
+      expect(undoAdd.executed).toBe(true);
+      expect((await shoppingListService.getAll()).length).toBe(0);
+
+      // 2. Test Undo for duplicate merge
+      await shoppingListService.add({ name: "Milk", quantity: 1, unit: "bottle" });
+      await shoppingListService.add({ name: "Milk", quantity: 2, unit: "bottle" });
+      expect((await shoppingListService.getAll())[0]?.quantity).toBe(3);
+
+      const undoMerge = await shoppingListService.executeUndo();
+      expect(undoMerge.executed).toBe(true);
+      expect((await shoppingListService.getAll())[0]?.quantity).toBe(1);
+
+      // 3. Test Undo for update
+      await shoppingListService.update((await shoppingListService.getAll())[0]!.id, { quantity: 10 });
+      expect((await shoppingListService.getAll())[0]?.quantity).toBe(10);
+
+      const undoUpdate = await shoppingListService.executeUndo();
+      expect(undoUpdate.executed).toBe(true);
+      expect((await shoppingListService.getAll())[0]?.quantity).toBe(1);
+
+      // 4. Test Undo for deletion
+      const milkId = (await shoppingListService.getAll())[0]!.id;
+      await shoppingListService.delete(milkId);
+      expect((await shoppingListService.getAll()).length).toBe(0);
+
+      const undoDelete = await shoppingListService.executeUndo();
+      expect(undoDelete.executed).toBe(true);
+      expect((await shoppingListService.getAll()).length).toBe(1);
+      expect((await shoppingListService.getAll())[0]?.name).toBe("Milk");
+
+      // 5. Test Undo via executeCommand
+      const undoCmdRes = await shoppingListService.executeCommand({
+        intent: "UNDO",
+        rawText: "undo that",
+        confidence: 0.98
+      });
+      // Last mutation was the restore from undoDelete (or no mutation since isUndoing was true)
+      expect(undoCmdRes.command.intent).toBe("UNDO");
+    })();
+  });
 });

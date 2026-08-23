@@ -1,5 +1,5 @@
 import type { ParsedCommand } from "@voice-shopping/shared";
-import { normalizeHinglish, HINDI_NUMERALS } from "@voice-shopping/shared";
+import { normalizeHinglish, HINDI_NUMERALS, classifyCategory } from "@voice-shopping/shared";
 
 const ENGLISH_NUMBER_WORDS: Record<string, number> = {
   a: 1,
@@ -191,7 +191,7 @@ function cleanItemName(text: string): string {
   return text
     .replace(/\b(i want to buy|i need to buy|need to buy|want to buy|put on the list|on my list|from my list|to my list|on list|from list|to list|in list|in my list)\b/gi, "")
     .replace(/\b(add|remove|delete|update|change|mark|purchased|bought|check off|find|search for|search|get|buy|look for|show|give me|suggest|suggestions)\b/gi, "")
-    .replace(/\b(karo|kar do|daalo|hata do|nikal do|badlo|badal do|khareed liya|mil gaya|kharidna hai|le lo|dhoondo|batao|dikhao)\b/gi, "")
+    .replace(/\b(karo|kar do|daalo|hata do|nikal do|badlo|badal do|khareed liya|mil gaya|kharidna hai|le lo|dhoondo|batao|dikhao|chahiye|mangta|lao)\b/gi, "")
     .replace(/\b(quantity|qty|amount|to|as|for|some|of|the|my|please|item|items)\b/gi, "")
     .replace(/[^a-zA-Z0-9\s-]/g, "")
     .replace(/\s+/g, " ")
@@ -214,6 +214,17 @@ export function parseCommand(rawText: string): ParsedCommand {
   // Apply Hinglish translation dictionary
   const normalizedHinglish = normalizeHinglish(trimmed);
   const lower = normalizedHinglish.toLowerCase();
+
+  // 0. Check for UNDO intent (AGENTS.md §6.5)
+  if (
+    /\b(undo|undo that|take that back|revert|oops|pehle jaisa karo|wapas karo|undo karo)\b/i.test(lower)
+  ) {
+    return {
+      intent: "UNDO",
+      rawText: trimmed,
+      confidence: 0.98
+    };
+  }
 
   // 1. Check for SUGGESTIONS intent
   if (
@@ -304,7 +315,7 @@ export function parseCommand(rawText: string): ParsedCommand {
   }
 
   // 6. Check for ADD_ITEM intent
-  const hasAddVerb = /\b(add|buy|get|put|need|want to buy|need to buy|daalo|kharidna hai|le lo)\b/i.test(lower);
+  const hasAddVerb = /\b(add|buy|get|put|need|want to buy|need to buy|daalo|kharidna hai|le lo|chahiye|mangta|lao)\b/i.test(lower);
   const { quantity, unit, remainingText: afterQty } = extractQuantityAndUnit(lower);
   const { brand, remainingText: afterBrand } = extractBrand(afterQty);
   const itemName = cleanItemName(afterBrand);
@@ -323,16 +334,21 @@ export function parseCommand(rawText: string): ParsedCommand {
   }
 
   // Check if it's a simple shopping item phrase e.g. "milk", "apples", "bread"
+  // Only treat as ADD_ITEM if the item maps to a known category (not "Other"),
+  // preventing gibberish from being silently treated as a valid add command.
   if (itemName && itemName.length > 1 && !/\b(weather|who is|play|sing|joke|time|capital|president)\b/i.test(lower)) {
-    return {
-      intent: "ADD_ITEM",
-      itemName,
-      quantity: quantity ?? 1,
-      unit: unit ?? "item",
-      ...(brand ? { brand } : {}),
-      rawText: trimmed,
-      confidence: 0.80
-    };
+    const detectedCategory = classifyCategory(itemName);
+    if (detectedCategory !== "Other") {
+      return {
+        intent: "ADD_ITEM",
+        itemName,
+        quantity: quantity ?? 1,
+        unit: unit ?? "item",
+        ...(brand ? { brand } : {}),
+        rawText: trimmed,
+        confidence: 0.80
+      };
+    }
   }
 
   // Fallback to UNKNOWN for irrelevant / garbage inputs

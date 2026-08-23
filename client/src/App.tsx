@@ -1,25 +1,28 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Mic,
   MicOff,
   Volume2,
   Send,
-  RotateCcw,
   Sparkles,
   AlertTriangle,
-  X
+  X,
+  WifiOff
 } from "lucide-react";
+import { Toaster, toast } from "sonner";
 import { api } from "./services/api.js";
 import { useVoiceRecognition } from "./hooks/useVoiceRecognition.js";
+import { useCommandPalette } from "./hooks/useCommandPalette.js";
+import { useOnlineStatus, type QueuedMutation } from "./hooks/useOnlineStatus.js";
 import { Header } from "./components/Header.js";
+import { CommandPalette } from "./components/CommandPalette.js";
 import { AudioWaveform } from "./components/AudioWaveform.js";
 import { CommandChips } from "./components/CommandChips.js";
 import { CommandHistory } from "./components/CommandHistory.js";
 import { ShoppingList } from "./components/ShoppingList.js";
 import { SuggestionsPanel } from "./components/SuggestionsPanel.js";
 import { ProductSearch } from "./components/ProductSearch.js";
-import { ToastContainer, type ToastMessage } from "./components/ToastContainer.js";
 import type {
   ShoppingItem,
   CreateItemDto,
@@ -40,22 +43,49 @@ export function App() {
   const [manualText, setManualText] = useState<string>("");
   const [previewCommand, setPreviewCommand] = useState<ParsedCommand | null>(null);
   const [commandLogs, setCommandLogs] = useState<CommandLogEntry[]>([]);
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [micAmplitude, setMicAmplitude] = useState<number>(0);
   const [screenReaderAnnouncement, setScreenReaderAnnouncement] = useState<string>("");
   const [productSearchParams, setProductSearchParams] = useState<{ q?: string; category?: string; maxPrice?: number }>({});
 
   const showToast = useCallback((message: string, type: "success" | "error" | "info" = "success") => {
-    const id = `toast-${Date.now()}-${Math.random()}`;
-    setToasts((prev) => [...prev, { id, type, message }]);
     setScreenReaderAnnouncement(message);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    if (type === "success") {
+      toast.success(message);
+    } else if (type === "error") {
+      toast.error(message);
+    } else {
+      toast.info(message);
+    }
   }, []);
 
-  const dismissToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+  // 0. Offline Status & Mutation Queue
+  const { isOnline, queuedCount, queueMutation, processQueue } = useOnlineStatus({
+    onSyncComplete: (syncedCount) => {
+      showToast(`Back online — synced ${syncedCount} queued action(s)`, "success");
+      queryClient.invalidateQueries({ queryKey: ["shopping-items"] });
+      queryClient.invalidateQueries({ queryKey: ["suggestions"] });
+    },
+    onSyncError: (err) => {
+      showToast(`Sync notice: ${err.message}`, "info");
+    }
+  });
+
+  // Replay queued mutations upon network recovery
+  useEffect(() => {
+    if (isOnline && queuedCount > 0) {
+      processQueue(async (mut: QueuedMutation) => {
+        if (mut.type === "ADD_ITEM") {
+          await api.addItem(mut.payload);
+        } else if (mut.type === "UPDATE_ITEM") {
+          await api.updateItem(mut.payload.id, mut.payload.updates);
+        } else if (mut.type === "REMOVE_ITEM") {
+          await api.deleteItem(mut.payload.id);
+        } else if (mut.type === "EXECUTE_COMMAND") {
+          await api.parseAndExecuteCommand(mut.payload.text, true);
+        }
+      });
+    }
+  }, [isOnline, queuedCount, processQueue]);
 
   // 1. Health Status Query
   const {
@@ -70,7 +100,8 @@ export function App() {
 
   // 2. Shopping Items Query
   const {
-    data: items = []
+    data: items = [],
+    isLoading: isItemsLoading
   } = useQuery({
     queryKey: ["shopping-items"],
     queryFn: api.getItems
@@ -96,7 +127,22 @@ export function App() {
 
   // Voice Command Execution Mutation
   const executeCommandMutation = useMutation({
-    mutationFn: (text: string) => api.parseAndExecuteCommand(text, true),
+    mutationFn: async (text: string) => {
+      if (!isOnline) {
+        queueMutation("EXECUTE_COMMAND", { text });
+        return {
+          command: {
+            intent: "ADD_ITEM" as const,
+            rawText: text,
+            confidence: 0.9,
+            itemName: text
+          },
+          executed: true,
+          message: `Saved offline: Queued "${text}" for sync`
+        };
+      }
+      return api.parseAndExecuteCommand(text, true);
+    },
     onSuccess: (data, variables) => {
       // Refresh list & suggestions
       queryClient.invalidateQueries({ queryKey: ["shopping-items"] });
@@ -127,9 +173,24 @@ export function App() {
     }
   });
 
-  // Direct Add Item Mutation (Optimistic)
+  // Direct Add Item Mutation (Optimistic + Offline Queue)
   const addItemMutation = useMutation({
-    mutationFn: (dto: CreateItemDto) => api.addItem(dto),
+    mutationFn: async (dto: CreateItemDto) => {
+      if (!isOnline) {
+        queueMutation("ADD_ITEM", dto);
+        return {
+          id: `offline-${Date.now()}`,
+          name: dto.name,
+          quantity: dto.quantity || 1,
+          unit: dto.unit || "item",
+          category: dto.category || "Other",
+          isPurchased: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return api.addItem(dto);
+    },
     onMutate: async (newItem) => {
       await queryClient.cancelQueries({ queryKey: ["shopping-items"] });
       const previousItems = queryClient.getQueryData<ShoppingItem[]>(["shopping-items"]) || [];
@@ -159,25 +220,36 @@ export function App() {
       }
 
       queryClient.setQueryData(["shopping-items"], optimisticList);
-      showToast(`Added ${newItem.name} to list`, "success");
+      showToast(isOnline ? `Added ${newItem.name} to list` : `Saved ${newItem.name} offline`, "success");
       return { previousItems };
     },
     onError: (_err, _newItem, context) => {
+      if (!isOnline) {
+        // Kept optimistically offline
+        return;
+      }
       if (context?.previousItems) {
         queryClient.setQueryData(["shopping-items"], context.previousItems);
       }
       showToast("Failed to add item to list", "error");
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["shopping-items"] });
-      queryClient.invalidateQueries({ queryKey: ["suggestions"] });
+      if (isOnline) {
+        queryClient.invalidateQueries({ queryKey: ["shopping-items"] });
+        queryClient.invalidateQueries({ queryKey: ["suggestions"] });
+      }
     }
   });
 
-  // Update Item Mutation (Optimistic)
+  // Update Item Mutation (Optimistic + Offline Queue)
   const updateItemMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: { quantity?: number; isPurchased?: boolean } }) =>
-      api.updateItem(id, updates),
+    mutationFn: async ({ id, updates }: { id: string; updates: { quantity?: number; isPurchased?: boolean } }) => {
+      if (!isOnline) {
+        queueMutation("UPDATE_ITEM", { id, updates });
+        return { id, ...updates } as unknown as ShoppingItem;
+      }
+      return api.updateItem(id, updates);
+    },
     onMutate: async ({ id, updates }) => {
       await queryClient.cancelQueries({ queryKey: ["shopping-items"] });
       const previousItems = queryClient.getQueryData<ShoppingItem[]>(["shopping-items"]) || [];
@@ -195,19 +267,28 @@ export function App() {
       return { previousItems };
     },
     onError: (_err, _vars, context) => {
+      if (!isOnline) return;
       if (context?.previousItems) {
         queryClient.setQueryData(["shopping-items"], context.previousItems);
       }
       showToast("Failed to update item", "error");
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["shopping-items"] });
+      if (isOnline) {
+        queryClient.invalidateQueries({ queryKey: ["shopping-items"] });
+      }
     }
   });
 
-  // Delete Item Mutation (Optimistic)
+  // Delete Item Mutation (Optimistic + Offline Queue)
   const deleteItemMutation = useMutation({
-    mutationFn: (id: string) => api.deleteItem(id),
+    mutationFn: async (id: string) => {
+      if (!isOnline) {
+        queueMutation("REMOVE_ITEM", { id });
+        return;
+      }
+      return api.deleteItem(id);
+    },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["shopping-items"] });
       const previousItems = queryClient.getQueryData<ShoppingItem[]>(["shopping-items"]) || [];
@@ -224,14 +305,17 @@ export function App() {
       return { previousItems };
     },
     onError: (_err, _id, context) => {
+      if (!isOnline) return;
       if (context?.previousItems) {
         queryClient.setQueryData(["shopping-items"], context.previousItems);
       }
       showToast("Failed to delete item", "error");
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["shopping-items"] });
-      queryClient.invalidateQueries({ queryKey: ["suggestions"] });
+      if (isOnline) {
+        queryClient.invalidateQueries({ queryKey: ["shopping-items"] });
+        queryClient.invalidateQueries({ queryKey: ["suggestions"] });
+      }
     }
   });
 
@@ -255,6 +339,9 @@ export function App() {
     },
     [executeCommandMutation]
   );
+
+  // Initialize Command Palette Hook
+  const commandPalette = useCommandPalette();
 
   // Initialize Voice Hook
   const voice = useVoiceRecognition({
@@ -287,10 +374,33 @@ export function App() {
         isHealthError={isHealthError}
         totalListCount={items.length}
         suggestionsCount={suggestions.length}
+        onOpenCommandPalette={commandPalette.open}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 w-full my-6 space-y-6">
+        {/* Offline PWA Banner */}
+        {!isOnline && (
+          <div className="p-4 rounded-2xl bg-amber-950/80 border border-amber-500/40 text-amber-200 text-xs flex items-center justify-between gap-3 shadow-xl animate-in fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0 border border-amber-500/30">
+                <WifiOff className="w-4 h-4" />
+              </div>
+              <div>
+                <strong className="block text-sm text-amber-100 font-bold">Offline Mode Active</strong>
+                <span className="text-slate-300 text-[11px] sm:text-xs">
+                  You are working offline. Shopping items and voice commands will be stored locally and synced automatically once reconnected.
+                </span>
+              </div>
+            </div>
+            {queuedCount > 0 && (
+              <span className="px-3 py-1.5 rounded-xl bg-amber-900/90 text-amber-200 border border-amber-600/60 text-xs font-semibold flex-shrink-0 whitespace-nowrap">
+                {queuedCount} {queuedCount === 1 ? "change" : "changes"} queued
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Web Speech Error State Warning Banners */}
         {voice.voiceState === "unsupported" && (
           <div className="p-4 rounded-2xl bg-amber-950/60 border border-amber-800/60 text-amber-200 text-xs flex items-center justify-between gap-3 shadow-lg">
@@ -315,7 +425,7 @@ export function App() {
             <button
               type="button"
               onClick={voice.resetTranscript}
-              className="p-1 rounded-lg text-rose-400 hover:text-white hover:bg-rose-900/50 cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
+              className="p-1 rounded-lg text-rose-400 hover:text-white hover:bg-rose-900/50 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <X className="w-4 h-4" />
             </button>
@@ -370,9 +480,16 @@ export function App() {
                 type="button"
                 onClick={voice.toggleListening}
                 aria-label={voice.voiceState === "listening" ? "Stop listening" : "Start voice command"}
-                className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 cursor-pointer focus:outline-none focus:ring-4 ${
+                style={{
+                  transform: voice.voiceState === "listening" ? `scale(${1 + micAmplitude * 0.18})` : undefined,
+                  boxShadow:
+                    voice.voiceState === "listening"
+                      ? `0 0 ${24 + micAmplitude * 36}px rgba(244, 63, 94, ${0.45 + micAmplitude * 0.45})`
+                      : undefined
+                }}
+                className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center shadow-2xl transition-all duration-150 cursor-pointer focus:outline-none focus:ring-4 ${
                   voice.voiceState === "listening"
-                    ? "bg-gradient-to-br from-rose-500 to-rose-700 text-white shadow-rose-500/30 ring-rose-500/50 scale-105"
+                    ? "bg-gradient-to-br from-rose-500 to-rose-700 text-white shadow-rose-500/30 ring-rose-500/50"
                     : voice.isSpeaking
                     ? "bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-emerald-500/30 ring-emerald-500/50"
                     : "bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 hover:from-indigo-400 hover:to-indigo-600 text-white shadow-indigo-500/25 ring-indigo-500/40 hover:scale-105 active:scale-95"
@@ -396,6 +513,7 @@ export function App() {
               <AudioWaveform
                 isListening={voice.voiceState === "listening"}
                 isSpeaking={voice.isSpeaking}
+                onAmplitudeChange={setMicAmplitude}
                 className="w-full h-14"
               />
             </div>
@@ -407,89 +525,37 @@ export function App() {
             className="w-full rounded-2xl bg-slate-900/90 border border-slate-800/90 p-3.5 sm:p-4 space-y-1.5 shadow-inner"
           >
             <div className="flex items-center justify-between text-[11px] text-slate-400">
-              <span className="font-semibold uppercase tracking-wider">Live Transcript</span>
+              <span className="font-semibold uppercase tracking-wider text-slate-400">Live Transcript</span>
               {voice.voiceState === "listening" && (
-                <span className="text-rose-400 animate-pulse font-medium">Recording audio...</span>
-              )}
-            </div>
-
-            <div className="min-h-[36px] flex items-center flex-wrap gap-1.5 text-sm sm:text-base">
-              {/* Final Transcript in Full Contrast */}
-              {voice.finalTranscript && (
-                <span className="text-white font-medium">{voice.finalTranscript}</span>
-              )}
-
-              {/* Interim Transcript in Muted/Lower-Contrast Italic */}
-              {voice.interimTranscript && (
-                <span className="text-indigo-400/70 italic animate-pulse">{voice.interimTranscript}</span>
-              )}
-
-              {!voice.finalTranscript && !voice.interimTranscript && (
-                <span className="text-slate-500 text-xs sm:text-sm italic">
-                  Tap the microphone and speak, or type a command in the input box below...
+                <span className="flex items-center gap-1.5 text-rose-400 font-semibold animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-rose-500" />
+                  Recording audio...
                 </span>
               )}
             </div>
+
+            {voice.voiceState === "idle" && !voice.finalTranscript && !voice.interimTranscript && (
+              <p className="text-xs text-slate-500 italic py-1">
+                Press the microphone or spacebar to begin voice input...
+              </p>
+            )}
+
+            {/* Finalized text in high-contrast styling */}
+            {voice.finalTranscript && (
+              <p className="text-sm font-semibold text-slate-100 py-0.5">
+                {voice.finalTranscript}
+              </p>
+            )}
+
+            {/* Interim text in muted distinct styling per voice-ui-style §2 */}
+            {voice.interimTranscript && (
+              <p className="text-sm text-indigo-300/80 italic py-0.5 animate-pulse">
+                {voice.interimTranscript}
+              </p>
+            )}
           </div>
 
-          {/* Manual Text Command Input Fallback (100% Feature Parity) */}
-          <form onSubmit={handleManualSubmit} className="flex items-center gap-2 pt-1">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                value={manualText}
-                onChange={(e) => setManualText(e.target.value)}
-                placeholder="Type a command (e.g. 'Add 2 bottles of milk' or '2 packet doodh add karo')..."
-                aria-label="Text command input"
-                className="w-full px-4 py-3 rounded-2xl bg-slate-900 border border-slate-800 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-              />
-              {manualText && (
-                <button
-                  type="button"
-                  onClick={() => setManualText("")}
-                  aria-label="Clear input text"
-                  className="p-1 text-slate-400 hover:text-white rounded-lg absolute right-3 top-3 cursor-pointer"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={!manualText.trim() || executeCommandMutation.isPending}
-              aria-label="Submit command"
-              className="min-h-[48px] px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-lg shadow-indigo-600/25 transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-            >
-              <Send className="w-4 h-4" />
-              <span className="hidden sm:inline">Submit</span>
-            </button>
-          </form>
-
-          {/* Quick Example Command Chips */}
-          <div className="space-y-1.5 pt-1 border-t border-slate-800/60">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              Quick Try Commands:
-            </span>
-            <div className="flex flex-wrap items-center gap-2">
-              {QUICK_EXAMPLES.map((ex) => (
-                <button
-                  key={ex.text}
-                  type="button"
-                  onClick={() => {
-                    setManualText(ex.text);
-                    executeCommandMutation.mutate(ex.text);
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800/80 hover:border-indigo-500/40 text-xs text-slate-300 hover:text-white transition flex items-center gap-1.5 cursor-pointer min-h-[36px]"
-                >
-                  <Sparkles className="w-3 h-3 text-indigo-400" />
-                  <span>"{ex.text}"</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Editable Command-Preview Chips (AGENTS.md §6.2) */}
+          {/* Parsed Command Preview Chips (AGENTS.md §6.2) */}
           {previewCommand && (
             <CommandChips
               parsedCommand={previewCommand}
@@ -498,73 +564,226 @@ export function App() {
               isExecuting={executeCommandMutation.isPending}
             />
           )}
+
+          {/* Text Input Fallback */}
+          <form onSubmit={handleManualSubmit} className="flex items-center gap-2 pt-1">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Or type a command (e.g. 'Add 2 milk', '2 packet doodh add karo')..."
+                value={manualText}
+                onChange={(e) => setManualText(e.target.value)}
+                aria-label="Text command input"
+                className="w-full pl-4 pr-10 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner"
+              />
+              {manualText && (
+                <button
+                  type="button"
+                  onClick={() => setManualText("")}
+                  aria-label="Clear manual input"
+                  className="p-1 rounded-lg text-slate-400 hover:text-white absolute right-2 top-1.5 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={!manualText.trim() || executeCommandMutation.isPending}
+              aria-label="Submit text command"
+              className="min-w-[44px] min-h-[44px] px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+            >
+              <Send className="w-4 h-4" />
+              <span className="hidden sm:inline">Send</span>
+            </button>
+          </form>
+
+          {/* Quick-Try Command Chips */}
+          <div className="space-y-1.5 pt-1">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              Quick Try Commands
+            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              {QUICK_EXAMPLES.map((ex) => (
+                <button
+                  key={ex.text}
+                  type="button"
+                  onClick={() => executeCommandMutation.mutate(ex.text)}
+                  className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500/40 text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer active:scale-95"
+                >
+                  <Sparkles className="w-3 h-3 text-indigo-400 flex-shrink-0" />
+                  <span>"{ex.text}"</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
 
-        {/* Tab View Switcher Content */}
-        {activeTab === "list" && (
-          <ShoppingList
-            items={items}
-            onTogglePurchased={(item) =>
-              updateItemMutation.mutate({ id: item.id, updates: { isPurchased: !item.isPurchased } })
-            }
-            onUpdateQuantity={(item, newQty) =>
-              updateItemMutation.mutate({ id: item.id, updates: { quantity: newQty } })
-            }
-            onDeleteItem={(id) => deleteItemMutation.mutate(id)}
-            onQuickAdd={(name, category) =>
-              addItemMutation.mutate({ name, quantity: 1, unit: "item", category })
-            }
-          />
-        )}
+        {/* Tab Navigation Navigation Bar */}
+        <nav
+          aria-label="Main View Navigation"
+          className="w-full flex items-center justify-between border-b border-slate-800/80 pb-3"
+        >
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab("list")}
+              className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-2 ${
+                activeTab === "list"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  : "bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800"
+              }`}
+            >
+              <span>Shopping List</span>
+              <span
+                className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                  activeTab === "list" ? "bg-indigo-700 text-white" : "bg-slate-800 text-slate-300"
+                }`}
+              >
+                {items.length}
+              </span>
+            </button>
 
-        {activeTab === "suggestions" && (
-          <SuggestionsPanel
-            suggestions={suggestions}
-            isLoading={isSuggestionsLoading}
-            onAddSuggestion={(sug) =>
-              addItemMutation.mutate({
-                name: sug.name,
-                category: sug.category,
-                quantity: 1,
-                unit: "item",
-                ...(sug.estimatedPrice !== undefined ? { price: sug.estimatedPrice } : {})
-              })
-            }
-          />
-        )}
+            <button
+              type="button"
+              onClick={() => setActiveTab("suggestions")}
+              className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-2 ${
+                activeTab === "suggestions"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  : "bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800"
+              }`}
+            >
+              <span>Ideas</span>
+              <span
+                className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                  activeTab === "suggestions" ? "bg-indigo-700 text-white" : "bg-slate-800 text-slate-300"
+                }`}
+              >
+                {suggestions.length}
+              </span>
+            </button>
 
-        {activeTab === "search" && (
-          <ProductSearch
-            products={products}
-            isLoading={isProductsLoading}
-            onSearch={setProductSearchParams}
-            onAddProduct={(prod) =>
-              addItemMutation.mutate({
-                name: prod.name,
-                category: prod.category,
-                quantity: 1,
-                unit: prod.unit,
-                brand: prod.brand,
-                price: prod.price
-              })
-            }
-          />
-        )}
+            <button
+              type="button"
+              onClick={() => setActiveTab("search")}
+              className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-2 ${
+                activeTab === "search"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  : "bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800"
+              }`}
+            >
+              <span>Search</span>
+              <span
+                className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                  activeTab === "search" ? "bg-indigo-700 text-white" : "bg-slate-800 text-slate-300"
+                }`}
+              >
+                {products.length}
+              </span>
+            </button>
 
-        {activeTab === "history" && (
-          <CommandHistory
-            logs={commandLogs}
-            onClear={() => setCommandLogs([])}
-          />
-        )}
+            <button
+              type="button"
+              onClick={() => setActiveTab("history")}
+              className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-2 ${
+                activeTab === "history"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  : "bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800"
+              }`}
+            >
+              <span>History</span>
+              <span
+                className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                  activeTab === "history" ? "bg-indigo-700 text-white" : "bg-slate-800 text-slate-300"
+                }`}
+              >
+                {commandLogs.length}
+              </span>
+            </button>
+          </div>
+        </nav>
+
+        {/* Tab Views */}
+        <section className="w-full space-y-6" aria-label="Active Tab View">
+          {activeTab === "list" && (
+            <ShoppingList
+              items={items}
+              isLoading={isItemsLoading}
+              onTogglePurchased={(item) =>
+                updateItemMutation.mutate({
+                  id: item.id,
+                  updates: { isPurchased: !item.isPurchased }
+                })
+              }
+              onUpdateQuantity={(item, qty) =>
+                updateItemMutation.mutate({
+                  id: item.id,
+                  updates: { quantity: qty }
+                })
+              }
+              onDeleteItem={(id) => deleteItemMutation.mutate(id)}
+              onQuickAdd={(name, category) =>
+                addItemMutation.mutate({ name, category, quantity: 1, unit: "item" })
+              }
+            />
+          )}
+
+          {activeTab === "suggestions" && (
+            <SuggestionsPanel
+              suggestions={suggestions}
+              isLoading={isSuggestionsLoading}
+              onAddSuggestion={(sug) =>
+                addItemMutation.mutate({
+                  name: sug.name,
+                  category: sug.category,
+                  quantity: 1,
+                  unit: "item",
+                  ...(sug.estimatedPrice !== undefined ? { price: sug.estimatedPrice } : {})
+                })
+              }
+            />
+          )}
+
+          {activeTab === "search" && (
+            <ProductSearch
+              products={products}
+              isLoading={isProductsLoading}
+              onSearch={(params) => setProductSearchParams(params)}
+              onAddProduct={(prod) =>
+                addItemMutation.mutate({
+                  name: prod.name,
+                  category: prod.category,
+                  brand: prod.brand,
+                  price: prod.price,
+                  unit: prod.unit,
+                  quantity: 1
+                })
+              }
+            />
+          )}
+
+          {activeTab === "history" && (
+            <CommandHistory
+              logs={commandLogs}
+              onClear={() => setCommandLogs([])}
+            />
+          )}
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="w-full border-t border-slate-800/80 pt-4 pb-2 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+      {/* Screen Reader Live Region for updates per accessibility rules */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {screenReaderAnnouncement}
+      </div>
+
+      {/* Footer Notice per AGENTS.md §9 */}
+      <footer className="w-full max-w-4xl mx-auto pt-8 pb-4 border-t border-slate-900 text-center text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3 px-4">
         <div className="flex items-center gap-2">
-          <span>Voice Command Shopping Assistant</span>
+          <span>Voice Shopping Assistant</span>
           <span>•</span>
           <span>Technical Assessment</span>
+          <span>•</span>
+          <span className="text-slate-400">Seeded Demo Data</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-slate-400">Deterministic NLU</span>
@@ -573,8 +792,24 @@ export function App() {
         </div>
       </footer>
 
-      {/* Toast Feedback */}
-      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      {/* Sonner Toaster */}
+      <Toaster
+        position="bottom-right"
+        theme="dark"
+        richColors
+        closeButton
+        toastOptions={{
+          className: "glass-panel border border-slate-700/80 rounded-2xl shadow-2xl font-sans text-xs sm:text-sm"
+        }}
+      />
+
+      {/* Keyboard Command Palette (Ctrl+K / Cmd+K) */}
+      <CommandPalette
+        isOpen={commandPalette.isOpen}
+        onClose={commandPalette.close}
+        onExecuteCommand={(cmd) => executeCommandMutation.mutate(cmd)}
+        onNavigateTab={setActiveTab}
+      />
     </div>
   );
 }

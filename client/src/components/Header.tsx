@@ -10,6 +10,7 @@ interface HeaderProps {
   isHealthError: boolean;
   totalListCount: number;
   suggestionsCount: number;
+  onOpenCommandPalette?: () => void;
 }
 
 export function Header({
@@ -19,7 +20,8 @@ export function Header({
   isHealthLoading,
   isHealthError,
   totalListCount,
-  suggestionsCount
+  suggestionsCount,
+  onOpenCommandPalette
 }: HeaderProps) {
   return (
     <header className="w-full border-b border-slate-800/80 pb-4 space-y-4">
@@ -44,8 +46,23 @@ export function Header({
           </div>
         </div>
 
-        {/* Status Indicators */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        {/* Status Indicators & Command Palette Trigger */}
+        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+          {onOpenCommandPalette && (
+            <button
+              type="button"
+              onClick={onOpenCommandPalette}
+              aria-label="Open Command Palette (Ctrl+K)"
+              className="min-h-[44px] px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-indigo-500/30 hover:border-indigo-500/60 text-xs text-slate-200 transition flex items-center gap-2 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+            >
+              <Search className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="font-medium hidden sm:inline">Palette</span>
+              <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono font-semibold">
+                Ctrl+K
+              </kbd>
+            </button>
+          )}
+
           {isHealthLoading ? (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-slate-900 text-slate-400 border border-slate-800">
               <Activity className="w-3.5 h-3.5 animate-pulse" />

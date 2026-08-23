@@ -25,3 +25,19 @@ ReactDOM.createRoot(rootElement).render(
     </QueryClientProvider>
   </React.StrictMode>
 );
+
+// Register PWA Service Worker
+if (typeof window !== "undefined" && "serviceWorker" in navigator && process.env.NODE_ENV !== "test") {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        if (registration.installing) {
+          // New worker installing
+        }
+      })
+      .catch(() => {
+        // Offline or SW disabled
+      });
+  });
+}

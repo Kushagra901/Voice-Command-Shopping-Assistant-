@@ -4,9 +4,15 @@ interface AudioWaveformProps {
   isListening: boolean;
   isSpeaking: boolean;
   className?: string;
+  onAmplitudeChange?: (amplitude: number) => void;
 }
 
-export function AudioWaveform({ isListening, isSpeaking, className = "w-full h-16" }: AudioWaveformProps) {
+export function AudioWaveform({
+  isListening,
+  isSpeaking,
+  className = "w-full h-16",
+  onAmplitudeChange
+}: AudioWaveformProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -60,6 +66,7 @@ export function AudioWaveform({ isListening, isSpeaking, className = "w-full h-1
       const middleY = height / 2;
 
       let frequencyData: Uint8Array | null = null;
+      let totalAmp = 0;
       if (localAnalyser) {
         frequencyData = new Uint8Array(localAnalyser.frequencyBinCount);
         // justified: DOM standard AnalyserNode getByteFrequencyData call
@@ -73,12 +80,15 @@ export function AudioWaveform({ isListening, isSpeaking, className = "w-full h-1
           const freqIndex = Math.floor((i / barCount) * frequencyData.length);
           const val = frequencyData[freqIndex] || 0;
           amplitude = Math.max(4, (val / 255) * (height - 8));
+          totalAmp += val / 255;
         } else if (isListening) {
           // Simulated active voice wave
           amplitude = Math.max(4, Math.sin(phase + i * 0.35) * (height / 2.2) + Math.cos(phase * 1.5 + i * 0.2) * 6 + height / 3);
+          totalAmp += amplitude / height;
         } else if (isSpeaking) {
           // Speaking harmonic pulse
           amplitude = Math.max(3, Math.sin(phase * 2 + i * 0.4) * (height / 2.8) + height / 3.5);
+          totalAmp += amplitude / height;
         } else {
           // Idle breathing rhythm
           amplitude = Math.max(3, Math.sin(phase * 0.5 + i * 0.2) * 4 + 5);
@@ -105,6 +115,11 @@ export function AudioWaveform({ isListening, isSpeaking, className = "w-full h-1
         ctx.beginPath();
         ctx.roundRect(x, y, barWidth, amplitude, 3);
         ctx.fill();
+      }
+
+      if (onAmplitudeChange) {
+        const norm = isListening ? totalAmp / barCount : isSpeaking ? 0.3 : 0;
+        onAmplitudeChange(norm);
       }
 
       phase += 0.08;

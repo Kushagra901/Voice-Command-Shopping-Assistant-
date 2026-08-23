@@ -1,7 +1,12 @@
 import * as dotenv from "dotenv";
 import path from "path";
-dotenv.config({ path: path.resolve(process.cwd(), ".env") });
-dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
+
+const isTestEnv = process.env["NODE_ENV"] === "test";
+
+if (!isTestEnv) {
+  dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+  dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
+}
 
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
@@ -11,9 +16,11 @@ import { logger } from "../utils/logger.js";
 const dbUrl = process.env["TURSO_DATABASE_URL"]?.trim();
 const dbAuthToken = process.env["TURSO_AUTH_TOKEN"]?.trim();
 
-// Determine connection strategy: remote Turso if URL provided, otherwise local SQLite file
-const isRemoteTurso = Boolean(dbUrl && (dbUrl.startsWith("libsql://") || dbUrl.startsWith("https://")));
-const effectiveUrl = isRemoteTurso ? dbUrl! : (dbUrl || "file:local.db");
+// Determine connection strategy: remote Turso if URL provided and not in test mode, otherwise local SQLite file
+const isRemoteTurso = Boolean(!isTestEnv && dbUrl && (dbUrl.startsWith("libsql://") || dbUrl.startsWith("https://")));
+const effectiveUrl = isRemoteTurso
+  ? dbUrl!
+  : (dbUrl || (isTestEnv ? "file:test.db" : "file:local.db"));
 
 export const rawClient = createClient(
   isRemoteTurso && dbAuthToken
@@ -29,7 +36,7 @@ export function getDatabaseConnectionStatus(): {
 } {
   return {
     mode: isRemoteTurso ? "connected" : "fallback",
-    url: isRemoteTurso ? "turso://remote" : "file://local.db"
+    url: isRemoteTurso ? "turso://remote" : (isTestEnv ? "file://test.db" : "file://local.db")
   };
 }
 

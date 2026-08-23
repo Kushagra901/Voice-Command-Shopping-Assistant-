@@ -1,4 +1,5 @@
 import { createApp } from "../app.js";
+import { logger } from "./logger.js";
 import http from "http";
 
 interface EndpointTest {
@@ -67,9 +68,7 @@ async function runTranscript(): Promise<void> {
   const address = server.address();
   const port = typeof address === "object" && address ? address.port : 3001;
 
-  console.log("===============================================================");
-  console.log("           LIVE BACKEND ENDPOINT VERIFICATION TRANSCRIPT        ");
-  console.log("===============================================================\n");
+  logger.info("LIVE BACKEND ENDPOINT VERIFICATION TRANSCRIPT - START");
 
   for (const t of tests) {
     const payload = t.body ? JSON.stringify(t.body) : undefined;
@@ -102,18 +101,19 @@ async function runTranscript(): Promise<void> {
       req.end();
     });
 
-    console.log(`### ${t.description}`);
-    console.log(`> ${t.method} http://localhost:3001${t.path}`);
-    if (t.body) {
-      console.log(`> Request Body: ${JSON.stringify(t.body)}`);
-    }
-    console.log(`< HTTP/1.1 ${res.status}`);
-    console.log(`< Response Payload:`);
-    console.log(JSON.stringify(res.body, null, 2));
-    console.log("\n---------------------------------------------------------------\n");
+    logger.info(`Verified ${t.description}`, {
+      method: t.method,
+      path: `http://localhost:${port}${t.path}`,
+      requestBody: t.body,
+      status: res.status,
+      responseBody: res.body
+    });
   }
 
+  logger.info("LIVE BACKEND ENDPOINT VERIFICATION TRANSCRIPT - COMPLETED");
   server.close();
 }
 
-runTranscript().catch(console.error);
+runTranscript().catch((err) => {
+  logger.error("Endpoint verification failed", err);
+});

@@ -57,3 +57,14 @@ HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
   roundRect: vi.fn(),
   fill: vi.fn()
 });
+
+// Mock ResizeObserver for cmdk
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// Mock scrollIntoView
+window.HTMLElement.prototype.scrollIntoView = vi.fn();
+Element.prototype.scrollIntoView = vi.fn();

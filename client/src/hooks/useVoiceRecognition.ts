@@ -55,6 +55,7 @@ export function useVoiceRecognition({ onCommandFinalized, lang = "en-IN" }: UseV
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // justified: Web Speech API has no standard TypeScript declarations; vendor-prefixed webkitSpeechRecognition requires runtime duck-typing
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { ParsedCommand, Intent } from "@voice-shopping/shared";
 import { Check, X, Tag, Hash, Package, Sparkles, AlertCircle } from "lucide-react";
+import { motion } from "motion/react";
 
 interface CommandChipsProps {
   parsedCommand: ParsedCommand;
@@ -16,6 +17,7 @@ const INTENT_LABELS: Record<Intent, { label: string; color: string }> = {
   MARK_PURCHASED: { label: "Mark Done", color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
   SEARCH_PRODUCT: { label: "Search Catalog", color: "bg-sky-500/20 text-sky-300 border-sky-500/40" },
   GET_SUGGESTIONS: { label: "Get Ideas", color: "bg-purple-500/20 text-purple-300 border-purple-500/40" },
+  UNDO: { label: "Undo Action", color: "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40" },
   UNKNOWN: { label: "Clarify Intent", color: "bg-slate-700/40 text-slate-300 border-slate-600" }
 };
 
@@ -49,7 +51,13 @@ export function CommandChips({
   const intentMeta = INTENT_LABELS[parsedCommand.intent] || INTENT_LABELS.UNKNOWN;
 
   return (
-    <div className="w-full max-w-xl mx-auto rounded-2xl glass-panel p-4 border border-indigo-500/30 shadow-xl space-y-3 animate-in fade-in zoom-in-95 duration-200">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95, y: -8 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, y: -8 }}
+      transition={{ duration: 0.18 }}
+      className="w-full max-w-xl mx-auto rounded-3xl glass-panel p-5 border border-indigo-500/40 shadow-2xl space-y-3.5 glow-indigo"
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-indigo-400" />
@@ -64,7 +72,7 @@ export function CommandChips({
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss command preview"
-          className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
+          className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <X className="w-4 h-4" />
         </button>
@@ -178,6 +186,6 @@ export function CommandChips({
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

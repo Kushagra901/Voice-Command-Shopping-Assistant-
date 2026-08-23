@@ -1,4 +1,4 @@
-import { db, rawClient, getDatabaseConnectionStatus } from "../data/db.js";
+import { rawClient, getDatabaseConnectionStatus } from "../data/db.js";
 import { logger } from "./logger.js";
 
 async function verifyTursoConnection(): Promise<void> {

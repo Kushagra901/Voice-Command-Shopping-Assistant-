@@ -31,6 +31,7 @@ export type Intent =
   | "MARK_PURCHASED"
   | "SEARCH_PRODUCT"
   | "GET_SUGGESTIONS"
+  | "UNDO"
   | "UNKNOWN";
 
 export type ParsedCommand = {

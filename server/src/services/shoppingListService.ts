@@ -30,7 +30,35 @@ function rowToShoppingItem(row: ShoppingItemRow): ShoppingItem {
   return item;
 }
 
+type LastMutation =
+  | {
+      type: "add";
+      createdId: string;
+      itemSnapshot: ShoppingItem;
+      wasMerged: boolean;
+      previousQuantity?: number;
+    }
+  | {
+      type: "remove";
+      itemSnapshot: ShoppingItem;
+    }
+  | {
+      type: "update";
+      id: string;
+      previousState: UpdateItemDto;
+      itemSnapshot: ShoppingItem;
+    }
+  | {
+      type: "mark";
+      id: string;
+      previousIsPurchased: boolean;
+      itemSnapshot: ShoppingItem;
+    };
+
 export class ShoppingListService {
+  private lastMutation: LastMutation | null = null;
+  private isUndoing = false;
+
   /**
    * Retrieves all current shopping items, sorted by category and creation time.
    * Explicitly handles empty state.
@@ -69,6 +97,7 @@ export class ShoppingListService {
     const existing = await this.findMatchingItem(normalizedName);
 
     if (existing && existing.unit.toLowerCase() === unit.toLowerCase()) {
+      const previousQuantity = existing.quantity;
       // Merge duplicate item by incrementing quantity
       const newQuantity = Math.round((existing.quantity + quantityToAdd) * 100) / 100;
       await db
@@ -82,11 +111,23 @@ export class ShoppingListService {
         .where(eq(shoppingItems.id, existing.id));
 
       const updated = await this.getById(existing.id);
-      return updated || {
+      const resultItem = updated || {
         ...existing,
         quantity: newQuantity,
         updatedAt: now
       };
+
+      if (!this.isUndoing) {
+        this.lastMutation = {
+          type: "add",
+          createdId: existing.id,
+          itemSnapshot: resultItem,
+          wasMerged: true,
+          previousQuantity
+        };
+      }
+
+      return resultItem;
     }
 
     // Insert new unique row
@@ -106,7 +147,7 @@ export class ShoppingListService {
 
     await db.insert(shoppingItems).values(newRow);
 
-    return {
+    const newItem: ShoppingItem = {
       id,
       name: rawName,
       quantity: quantityToAdd,
@@ -118,6 +159,17 @@ export class ShoppingListService {
       createdAt: now,
       updatedAt: now
     };
+
+    if (!this.isUndoing) {
+      this.lastMutation = {
+        type: "add",
+        createdId: id,
+        itemSnapshot: newItem,
+        wasMerged: false
+      };
+    }
+
+    return newItem;
   }
 
   /**
@@ -156,19 +208,146 @@ export class ShoppingListService {
     if (dto.price !== undefined) updates.price = dto.price;
 
     await db.update(shoppingItems).set(updates).where(eq(shoppingItems.id, id));
+    const updated = await this.getById(id);
 
-    return this.getById(id);
+    if (!this.isUndoing && updated) {
+      if (dto.isPurchased !== undefined && Object.keys(dto).length === 1) {
+        this.lastMutation = {
+          type: "mark",
+          id,
+          previousIsPurchased: existing.isPurchased,
+          itemSnapshot: updated
+        };
+      } else {
+        const previousState: UpdateItemDto = {
+          name: existing.name,
+          quantity: existing.quantity,
+          unit: existing.unit,
+          category: existing.category,
+          isPurchased: existing.isPurchased,
+          ...(existing.brand !== undefined ? { brand: existing.brand } : {}),
+          ...(existing.price !== undefined ? { price: existing.price } : {})
+        };
+        this.lastMutation = {
+          type: "update",
+          id,
+          previousState,
+          itemSnapshot: updated
+        };
+      }
+    }
+
+    return updated;
   }
 
   /**
    * Deletes an item by ID.
    */
   async delete(id: string): Promise<boolean> {
+    const existing = await this.getById(id);
     const result = await rawClient.execute({
       sql: "DELETE FROM shopping_items WHERE id = ?;",
       args: [id]
     });
-    return result.rowsAffected > 0;
+    if (result.rowsAffected > 0) {
+      if (!this.isUndoing && existing) {
+        this.lastMutation = {
+          type: "remove",
+          itemSnapshot: existing
+        };
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Reverses the last mutation operation (AGENTS.md §6.5).
+   */
+  async executeUndo(): Promise<{ executed: boolean; message: string; item?: ShoppingItem }> {
+    if (!this.lastMutation) {
+      return {
+        executed: false,
+        message: "Nothing to undo."
+      };
+    }
+
+    const mutation = this.lastMutation;
+    this.lastMutation = null;
+    this.isUndoing = true;
+
+    try {
+      switch (mutation.type) {
+        case "add": {
+          if (mutation.wasMerged && mutation.previousQuantity !== undefined) {
+            const reverted = await this.update(mutation.createdId, { quantity: mutation.previousQuantity });
+            return {
+              executed: true,
+              message: `Undid addition of ${mutation.itemSnapshot.name}. Quantity reverted to ${mutation.previousQuantity}.`,
+              ...(reverted ? { item: reverted } : {})
+            };
+          } else {
+            await this.delete(mutation.createdId);
+            return {
+              executed: true,
+              message: `Undid addition. Removed ${mutation.itemSnapshot.name} from your list.`,
+              item: mutation.itemSnapshot
+            };
+          }
+        }
+
+        case "remove": {
+          await rawClient.execute({
+            sql: `INSERT INTO shopping_items (id, name, quantity, unit, category, is_purchased, brand, price, created_at, updated_at)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+            args: [
+              mutation.itemSnapshot.id,
+              mutation.itemSnapshot.name,
+              mutation.itemSnapshot.quantity,
+              mutation.itemSnapshot.unit,
+              mutation.itemSnapshot.category,
+              mutation.itemSnapshot.isPurchased ? 1 : 0,
+              mutation.itemSnapshot.brand || null,
+              mutation.itemSnapshot.price ?? null,
+              mutation.itemSnapshot.createdAt,
+              new Date().toISOString()
+            ]
+          });
+          const restored = await this.getById(mutation.itemSnapshot.id);
+          return {
+            executed: true,
+            message: `Undid deletion. Restored ${mutation.itemSnapshot.name} to your list.`,
+            item: restored || mutation.itemSnapshot
+          };
+        }
+
+        case "update": {
+          const reverted = await this.update(mutation.id, mutation.previousState);
+          return {
+            executed: true,
+            message: `Undid update to ${mutation.itemSnapshot.name}.`,
+            ...(reverted ? { item: reverted } : {})
+          };
+        }
+
+        case "mark": {
+          const reverted = await this.update(mutation.id, { isPurchased: mutation.previousIsPurchased });
+          return {
+            executed: true,
+            message: `Undid mark purchased for ${mutation.itemSnapshot.name}.`,
+            ...(reverted ? { item: reverted } : {})
+          };
+        }
+      }
+    } catch (error) {
+      logger.error("Failed to execute undo", error);
+      return {
+        executed: false,
+        message: "Failed to undo the last action."
+      };
+    } finally {
+      this.isUndoing = false;
+    }
   }
 
   /**
@@ -204,6 +383,16 @@ export class ShoppingListService {
    */
   async executeCommand(command: ParsedCommand): Promise<ParseCommandResponse> {
     switch (command.intent) {
+      case "UNDO": {
+        const undoResult = await this.executeUndo();
+        return {
+          command,
+          executed: undoResult.executed,
+          message: undoResult.message,
+          ...(undoResult.item ? { item: undoResult.item } : {})
+        };
+      }
+
       case "ADD_ITEM": {
         if (!command.itemName) {
           return { command, executed: false, message: "What item would you like to add?" };

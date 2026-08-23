@@ -1,5 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
+import path from "path";
 import { healthRouter } from "./routes/healthRoutes.js";
 import { shoppingListRouter } from "./routes/shoppingListRoutes.js";
 import { suggestionsRouter } from "./routes/suggestionsRoutes.js";
@@ -28,6 +29,10 @@ export function createApp(): express.Express {
   );
 
   app.use(express.json());
+
+  // Static product assets serving
+  app.use("/assets", express.static(path.resolve(process.cwd(), "assets")));
+  app.use("/assets", express.static(path.resolve(process.cwd(), "server/assets")));
 
   // Mount API endpoints conforming to specification
   app.use("/api/health", healthRouter);

@@ -6,7 +6,14 @@ export default defineConfig({
     globals: true,
     environment: "node",
     fileParallelism: false,
-    include: ["src/**/*.{test,spec}.ts"]
+    include: ["src/**/*.{test,spec}.ts"],
+    env: {
+      NODE_ENV: "test",
+      TURSO_DATABASE_URL: "file:test.db",
+      TURSO_AUTH_TOKEN: ""
+    },
+    testTimeout: 30000,
+    hookTimeout: 30000
   },
   resolve: {
     alias: {

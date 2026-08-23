@@ -25,6 +25,8 @@ A voice-controlled shopping list web application with natural language understan
 2. **Editable command-preview chips** (§6.2) — Parsed command fields (intent, item, quantity, unit, brand, price) shown as interactive editable chips before execution
 3. **Command history / audit log** (§6.3) — Running timeline of every parsed command with intent badge, confidence %, timestamp, and execution status
 4. **Hinglish command support** (§6.4) — Working bilingual code-switch parser as the "multilingual support" answer
+5. **"Undo that"** (§6.5) — Voice or text command (`"undo"`, `"undo that"`, `"take that back"`, `"revert"`) that reverts the previous mutation (add, delete, quantity update, or mark-purchased)
+6. **Keyboard command palette (Ctrl+K / Cmd+K)** (§6.7) — Modal command palette with search filtering, categorised command templates, full keyboard navigation (`↑`/`↓`/`↵`/`ESC`), and direct natural-language voice-equivalent execution
 
 ### Smart Recommendations
 - **Frequency-based** — Items purchased most often
@@ -79,30 +81,9 @@ A voice-controlled shopping list web application with natural language understan
 ```
 voice-shopping-assistant/
 ├── client/                          # React + Vite + TypeScript frontend
-│   └── src/
-│       ├── components/              # UI components (ShoppingList, AudioWaveform, CommandChips, etc.)
-│       ├── hooks/                   # useVoiceRecognition (STT/TTS hook)
-│       ├── services/                # Typed API client (api.ts)
-│       ├── __tests__/               # Client unit tests
-│       ├── App.tsx                   # Main application
-│       └── index.css                # Tailwind + custom styles
 ├── server/                          # Express + TypeScript backend
-│   └── src/
-│       ├── controllers/             # Route handlers
-│       ├── routes/                  # Express router definitions
-│       ├── services/                # Business logic (parser, recommendations, products)
-│       ├── middleware/              # Zod validation middleware
-│       ├── data/                    # Drizzle schema, DB connection
-│       ├── utils/                   # Logger, response helpers
-│       └── __tests__/               # Server unit + integration tests
-│   └── drizzle/                     # Seed script
 ├── shared/                          # Cross-cutting contracts (imported by both sides)
 │   └── types/
-│       ├── index.ts                 # ParsedCommand, API envelopes, domain types
-│       ├── hindiAliases.ts          # Hinglish synonym map + normalizer
-│       └── categoryClassifier.ts    # Category detection engine
-├── .env.example                     # Required env var names (no values)
-├── .gitignore                       # Excludes .env, node_modules, dist, *.db
 ├── package.json                     # Workspace root with dev/build/test scripts
 └── README.md                        # This file
 ```
@@ -284,8 +265,8 @@ Response:
 npm test
 
 # Individual workspaces
-npm run test:server    # 37 tests (parser, services, API integration)
-npm run test:client    # 3 tests (App rendering, navigation, command input)
+npm run test:server    # 39 tests (parser, services, API integration)
+npm run test:client    # 37 tests (ShoppingList, CommandChips, useVoiceRecognition, CommandPalette, useOnlineStatus, App)
 
 # TypeScript type safety check
 npm run typecheck
@@ -295,13 +276,18 @@ npm run typecheck
 
 | Test File | Tests | What It Covers |
 |-----------|------:|----------------|
-| `nluParser.test.ts` | 11 | Add/remove/update/mark/search intents, Hinglish commands, unknown/garbage input |
+| `nluParser.test.ts` | 12 | Add/remove/update/mark/search/undo intents, Hinglish commands, unknown input |
 | `apiIntegration.test.ts` | 9 | All REST endpoints with Zod validation, CRUD lifecycle |
 | `categoryClassifier.test.ts` | 8 | Category detection for all 8 categories + unknown items |
-| `shoppingListService.test.ts` | 5 | Add, duplicate merge, update, delete, empty state |
+| `shoppingListService.test.ts` | 6 | Add, duplicate merge, update, delete, undo mutations, empty state |
 | `recommendationEngine.test.ts` | 3 | Frequency, recency, and substitute suggestions |
 | `health.test.ts` | 1 | Health endpoint envelope format |
-| `App.test.tsx` | 3 | React component rendering, tab navigation, command input |
+| `CommandPalette.test.tsx` | 11 | Command palette rendering, search filtering, shortcut hooks, keyboard navigation, command execution |
+| `ShoppingList.test.tsx` | 6 | Category grouping, empty states, item deletion, status toggling, quantity stepper, status filtering |
+| `App.test.tsx` | 6 | React component rendering, tab navigation, manual command input, skeleton loader, offline banner |
+| `useOnlineStatus.test.ts` | 6 | Online/offline detection, local mutation queueing, automatic reconnect sync |
+| `useVoiceRecognition.test.ts` | 5 | SpeechRecognition unsupported fallback, listening transitions, mic permission errors, interim/final transcripts, TTS speech |
+| `CommandChips.test.tsx` | 3 | Parsed command badge preview, interactive inline editing, execute/dismiss callbacks |
 
 ---
 
@@ -322,17 +308,16 @@ See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for step-by-step instructions with exact 
 2. **Web Speech API browser dependency** — STT requires Chrome/Edge for full experience; text fallback covers the gap
 3. **Deterministic parser** — Handles structured shopping commands well but will misparse complex conversational input (the swappable parser seam supports future LLM upgrade)
 4. **Seeded demo data** — Product catalog and purchase history are static seed data, not real user activity
-5. **No offline support** — Requires network connection (PWA support deferred)
-6. **Single language pair** — English + Hinglish only; additional languages require extending the alias map
+5. **Single language pair** — English + Hinglish only; additional languages require extending the alias map
 
 ---
 
 ## 🔮 Future Improvements
 
 - [ ] LLM-backed NLU parser (swappable seam already exists)
-- [ ] "Undo that" voice command (revert last mutation)
-- [ ] Offline-aware PWA with command queue + sync on reconnect
-- [ ] Keyboard command palette (Cmd/Ctrl+K) for full keyboard-only operation
+- [x] "Undo that" voice command (revert last mutation) — Implemented (§6.5)
+- [x] Keyboard command palette (Cmd/Ctrl+K) for full keyboard-only operation — Implemented (§6.7)
+- [x] Offline-aware PWA with command queue + sync on reconnect — Implemented (§6.6)
 - [ ] Multi-user support with authentication
 - [ ] Additional language alias maps (Tamil, Telugu, Bengali)
 - [ ] Price tracking and deal alerts
@@ -342,7 +327,14 @@ See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for step-by-step instructions with exact 
 
 ## 📝 Design Decisions
 
-**Uniqueness features selected** (from AGENTS.md §6): Live waveform (#1), Editable command chips (#2), Command audit log (#3), and Hinglish support (#4). These four were chosen because they are independently demoable in under 2 minutes each, collectively demonstrate audio engineering, parser architecture, and real multilingual NLU — not just a translated UI string table.
+**Uniqueness features selected** (from AGENTS.md §6):
+1. **Live waveform, not a pulsing circle** (#1) — Web Audio `AnalyserNode` drawn at 60fps on `<canvas>`
+2. **Editable command-preview chips** (#2) — Visual badge decomposition before mutation dispatch
+3. **Command history / audit log panel** (#3) — Full audit timeline with confidence scores and replay
+4. **Hinglish command support** (#4) — Phonetic transliteration layer with 27 canonical Hindi grocery maps
+5. **"Undo that" voice mutation revert** (#5) — Reversible mutation history stack with voice trigger
+6. **Offline-aware PWA** (#6) — Web App Manifest, Service Worker caching, and offline mutation queue with auto-sync
+7. **Keyboard command palette (Cmd/Ctrl+K)** (#7) — Full accessibility and voice parity via keyboard
 
 **Turso over bare SQLite file:** The original brief flagged ephemeral-disk deployment as an open risk. Turso's free tier provides an always-on HTTP-based SQLite database that works identically in local dev and production, closing this gap with zero cost.
 
