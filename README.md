@@ -350,8 +350,8 @@ npm run test
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Kushagra901/voice-command-shopping-assistant.git
-   cd voice-command-shopping-assistant
+   git clone https://github.com/Kushagra901/Voice-Command-Shopping-Assistant-.git
+   cd Voice-Command-Shopping-Assistant-
    ```
 
 2. **Install all dependencies across the monorepo:**
