@@ -129,7 +129,7 @@ export function ShoppingList({
         <div>
           <h2 className="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">
             <span>Shopping List</span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800/40 font-semibold">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-sage-950/90 text-sage-300 border border-sage-800/60 font-semibold">
               {pendingCount} to buy
             </span>
             {completedCount > 0 && (
@@ -149,7 +149,7 @@ export function ShoppingList({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Filter shopping list"
-              className="w-full px-3.5 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner"
+              className="w-full px-3.5 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sage-500/50 shadow-inner"
             />
           </div>
 
@@ -159,7 +159,7 @@ export function ShoppingList({
               type="button"
               onClick={() => setFilterMode("all")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer min-h-[44px] flex items-center justify-center ${
-                filterMode === "all" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+                filterMode === "all" ? "bg-sage-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
               }`}
             >
               All ({items.length})
@@ -168,7 +168,7 @@ export function ShoppingList({
               type="button"
               onClick={() => setFilterMode("pending")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer min-h-[44px] flex items-center justify-center ${
-                filterMode === "pending" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+                filterMode === "pending" ? "bg-sage-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
               }`}
             >
               Pending ({pendingCount})
@@ -177,7 +177,7 @@ export function ShoppingList({
               type="button"
               onClick={() => setFilterMode("completed")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer min-h-[44px] flex items-center justify-center ${
-                filterMode === "completed" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+                filterMode === "completed" ? "bg-sage-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
               }`}
             >
               Bought ({completedCount})
@@ -194,7 +194,7 @@ export function ShoppingList({
           transition={{ duration: 0.2 }}
           className="w-full rounded-3xl glass-panel p-8 text-center border border-dashed border-slate-800 space-y-4 my-4 shadow-xl"
         >
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-900/60 to-sky-900/40 border border-indigo-500/30 text-indigo-300 flex items-center justify-center mx-auto shadow-inner">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sage-900/60 to-emerald-900/40 border border-sage-500/30 text-sage-300 flex items-center justify-center mx-auto shadow-inner">
             <ShoppingBag className="w-8 h-8" />
           </div>
           <div className="space-y-1.5 max-w-sm mx-auto">
@@ -208,15 +208,15 @@ export function ShoppingList({
             <button
               type="button"
               onClick={() => onQuickAdd("Whole Milk", "Dairy")}
-              className="min-h-[44px] px-4 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm active:scale-95"
+              className="min-h-[44px] px-4 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-sage-500/40 text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm active:scale-95"
             >
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <Sparkles className="w-3.5 h-3.5 text-sage-400" />
               + Add Milk
             </button>
             <button
               type="button"
               onClick={() => onQuickAdd("Fresh Apples", "Produce")}
-              className="min-h-[44px] px-4 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm active:scale-95"
+              className="min-h-[44px] px-4 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-sage-500/40 text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm active:scale-95"
             >
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
               + Add Apples
@@ -224,7 +224,7 @@ export function ShoppingList({
             <button
               type="button"
               onClick={() => onQuickAdd("Whole Wheat Bread", "Bakery")}
-              className="min-h-[44px] px-4 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm active:scale-95"
+              className="min-h-[44px] px-4 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-sage-500/40 text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm active:scale-95"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               + Add Bread
@@ -251,7 +251,7 @@ export function ShoppingList({
             <section key={category} className="space-y-2.5" aria-labelledby={`category-heading-${category}`}>
               {/* Category Header */}
               <div className="flex items-center gap-2 px-1">
-                <div className="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                <div className="w-6 h-6 rounded-lg bg-sage-500/10 text-sage-400 flex items-center justify-center border border-sage-500/20">
                   <CategoryIcon category={category} size={14} />
                 </div>
                 <h3 id={`category-heading-${category}`} className="text-xs font-bold text-slate-300 uppercase tracking-wider">
@@ -277,7 +277,7 @@ export function ShoppingList({
                       className={`group w-full rounded-2xl p-3.5 transition-all duration-200 flex items-center justify-between gap-3 border shadow-sm ${
                         item.isPurchased
                           ? "bg-slate-950/40 border-slate-900 text-slate-500"
-                          : "glass-card hover:border-indigo-500/40 text-slate-100"
+                          : "glass-card hover:border-sage-500/40 text-slate-100"
                       }`}
                     >
                       {/* Completion Checkbox (Tap target >= 44x44px) */}
@@ -287,10 +287,10 @@ export function ShoppingList({
                             type="button"
                             onClick={() => onTogglePurchased(item)}
                             aria-label={`Mark ${item.name} as ${item.isPurchased ? "pending" : "purchased"}`}
-                            className={`min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 flex-shrink-0 ${
+                            className={`min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-500/50 flex-shrink-0 ${
                               item.isPurchased
                                 ? "bg-emerald-950/90 border border-emerald-500/60 text-emerald-400 shadow-sm"
-                                : "bg-slate-900 border border-slate-700 hover:border-indigo-500 text-transparent hover:text-slate-400"
+                                : "bg-slate-900 border border-slate-700 hover:border-sage-500 text-transparent hover:text-slate-400"
                             }`}
                           >
                             <Check className="w-4 h-4" />
@@ -315,7 +315,7 @@ export function ShoppingList({
                           </div>
 
                           <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5 font-medium">
-                            <span className="text-indigo-300">
+                            <span className="text-sage-300">
                               {item.quantity} {item.unit}
                             </span>
                             {item.price !== undefined && (
@@ -335,7 +335,7 @@ export function ShoppingList({
                             type="button"
                             onClick={() => onUpdateQuantity(item, Math.max(0.5, item.quantity - 1))}
                             aria-label={`Decrease quantity for ${item.name}`}
-                            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 active:scale-95"
+                            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-500/50 active:scale-95"
                           >
                             <Minus className="w-3.5 h-3.5" />
                           </button>
@@ -346,7 +346,7 @@ export function ShoppingList({
                             type="button"
                             onClick={() => onUpdateQuantity(item, item.quantity + 1)}
                             aria-label={`Increase quantity for ${item.name}`}
-                            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 active:scale-95"
+                            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-500/50 active:scale-95"
                           >
                             <Plus className="w-3.5 h-3.5" />
                           </button>

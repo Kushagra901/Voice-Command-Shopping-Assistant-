@@ -100,9 +100,9 @@ export function AudioWaveform({
         // Gradient styling
         const grad = ctx.createLinearGradient(0, y, 0, y + amplitude);
         if (isListening) {
-          grad.addColorStop(0, "#a855f7"); // Purple-500
-          grad.addColorStop(0.5, "#6366f1"); // Indigo-500
-          grad.addColorStop(1, "#38bdf8"); // Sky-400
+          grad.addColorStop(0, "#db7040"); // Terracotta-500
+          grad.addColorStop(0.5, "#3F6B4C"); // Sage-600
+          grad.addColorStop(1, "#a4c4ad"); // Sage-300
         } else if (isSpeaking) {
           grad.addColorStop(0, "#34d399"); // Emerald-400
           grad.addColorStop(1, "#059669"); // Emerald-600

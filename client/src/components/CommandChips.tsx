@@ -11,13 +11,13 @@ interface CommandChipsProps {
 }
 
 const INTENT_LABELS: Record<Intent, { label: string; color: string }> = {
-  ADD_ITEM: { label: "Add Item", color: "bg-indigo-500/20 text-indigo-300 border-indigo-500/40" },
+  ADD_ITEM: { label: "Add Item", color: "bg-sage-500/20 text-sage-300 border-sage-500/40" },
   REMOVE_ITEM: { label: "Remove Item", color: "bg-rose-500/20 text-rose-300 border-rose-500/40" },
   UPDATE_ITEM: { label: "Update Quantity", color: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
   MARK_PURCHASED: { label: "Mark Done", color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
   SEARCH_PRODUCT: { label: "Search Catalog", color: "bg-sky-500/20 text-sky-300 border-sky-500/40" },
-  GET_SUGGESTIONS: { label: "Get Ideas", color: "bg-purple-500/20 text-purple-300 border-purple-500/40" },
-  UNDO: { label: "Undo Action", color: "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40" },
+  GET_SUGGESTIONS: { label: "Get Ideas", color: "bg-terracotta-500/20 text-terracotta-300 border-terracotta-500/40" },
+  UNDO: { label: "Undo Action", color: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
   UNKNOWN: { label: "Clarify Intent", color: "bg-slate-700/40 text-slate-300 border-slate-600" }
 };
 
@@ -56,11 +56,11 @@ export function CommandChips({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: -8 }}
       transition={{ duration: 0.18 }}
-      className="w-full max-w-xl mx-auto rounded-3xl glass-panel p-5 border border-indigo-500/40 shadow-2xl space-y-3.5 glow-indigo"
+      className="w-full max-w-xl mx-auto rounded-3xl glass-panel p-5 border border-sage-500/40 shadow-2xl space-y-3.5 glow-sage"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-indigo-400" />
+          <Sparkles className="w-4 h-4 text-terracotta-400" />
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             Parsed Command Preview
           </span>
@@ -94,17 +94,17 @@ export function CommandChips({
         {/* Item Name Chip (Editable) */}
         {parsedCommand.itemName && (
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700 text-xs font-medium text-slate-100">
-            <Package className="w-3.5 h-3.5 text-indigo-400" />
+            <Package className="w-3.5 h-3.5 text-sage-400" />
             {isEditing ? (
               <input
                 type="text"
                 value={editedItem}
                 onChange={(e) => setEditedItem(e.target.value)}
-                className="bg-slate-900 px-1 py-0.5 rounded border border-indigo-500 text-white text-xs w-28 focus:outline-none"
+                className="bg-slate-900 px-1 py-0.5 rounded border border-sage-500 text-white text-xs w-28 focus:outline-none"
                 aria-label="Edit item name"
               />
             ) : (
-              <span className="font-semibold text-indigo-200">{editedItem}</span>
+              <span className="font-semibold text-sage-200">{editedItem}</span>
             )}
           </div>
         )}
@@ -120,7 +120,7 @@ export function CommandChips({
                 step="any"
                 value={editedQuantity}
                 onChange={(e) => setEditedQuantity(parseFloat(e.target.value) || 1)}
-                className="bg-slate-900 px-1 py-0.5 rounded border border-indigo-500 text-white text-xs w-16 focus:outline-none"
+                className="bg-slate-900 px-1 py-0.5 rounded border border-sage-500 text-white text-xs w-16 focus:outline-none"
                 aria-label="Edit quantity"
               />
             ) : (
@@ -150,7 +150,7 @@ export function CommandChips({
         <button
           type="button"
           onClick={() => setIsEditing(!isEditing)}
-          className="text-xs text-indigo-400 hover:text-indigo-300 underline underline-offset-2 px-1 cursor-pointer py-1"
+          className="text-xs text-sage-400 hover:text-sage-300 underline underline-offset-2 px-1 cursor-pointer py-1"
         >
           {isEditing ? "Done editing" : "Edit values"}
         </button>
@@ -179,7 +179,7 @@ export function CommandChips({
             type="button"
             onClick={handleConfirm}
             disabled={isExecuting}
-            className="min-h-[44px] px-5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-semibold shadow-md hover:shadow-indigo-500/20 flex items-center gap-1.5 transition active:scale-95 cursor-pointer disabled:opacity-50"
+            className="min-h-[44px] px-5 rounded-xl bg-gradient-to-r from-sage-600 to-sage-700 hover:from-sage-500 hover:to-sage-600 text-white text-xs font-semibold shadow-md hover:shadow-sage-950/40 flex items-center gap-1.5 transition active:scale-95 cursor-pointer disabled:opacity-50"
           >
             <Check className="w-4 h-4" />
             {isExecuting ? "Executing..." : "Execute Command"}

@@ -28,16 +28,16 @@ export function Header({
       {/* Top Branding & Status Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center shadow-lg shadow-indigo-500/10">
-            <AppLogoIcon className="w-6 h-6 text-indigo-400" />
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage-600/20 to-terracotta-500/20 border border-sage-500/30 flex items-center justify-center shadow-lg shadow-sage-950/20">
+            <AppLogoIcon className="w-6 h-6 text-sage-400" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-cream-100 via-slate-100 to-sage-200 bg-clip-text text-transparent">
               Voice Shopping Assistant
             </h1>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.2 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-800/40 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+              <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.2 rounded-full bg-sage-950/90 text-sage-300 border border-sage-800/60 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-sage-400 animate-pulse" />
                 English & Hinglish NLU
               </span>
               <span className="text-[11px] text-slate-500 hidden sm:inline">•</span>
@@ -53,9 +53,9 @@ export function Header({
               type="button"
               onClick={onOpenCommandPalette}
               aria-label="Open Command Palette (Ctrl+K)"
-              className="min-h-[44px] px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-indigo-500/30 hover:border-indigo-500/60 text-xs text-slate-200 transition flex items-center gap-2 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              className="min-h-[44px] px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-sage-500/30 hover:border-sage-500/60 text-xs text-slate-200 transition flex items-center gap-2 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-500/50"
             >
-              <Search className="w-3.5 h-3.5 text-indigo-400" />
+              <Search className="w-3.5 h-3.5 text-sage-400" />
               <span className="font-medium hidden sm:inline">Palette</span>
               <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono font-semibold">
                 Ctrl+K
@@ -79,8 +79,8 @@ export function Header({
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 API Healthy
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-indigo-950/60 text-indigo-300 border border-indigo-800/50">
-                <Database className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-terracotta-950/60 text-terracotta-300 border border-terracotta-800/50">
+                <Database className="w-3.5 h-3.5 text-terracotta-400" />
                 {health?.database === "connected" ? "Turso Cloud" : "Local libSQL"}
               </span>
             </div>
@@ -93,15 +93,15 @@ export function Header({
         <button
           type="button"
           onClick={() => onTabChange("list")}
-          className={`min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 whitespace-nowrap ${
+          className={`min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-500/50 whitespace-nowrap ${
             activeTab === "list"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+              ? "bg-sage-600 text-white shadow-md shadow-sage-950/40"
               : "bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-slate-800/80"
           }`}
         >
           <ListOrdered className="w-4 h-4" />
           <span>Shopping List</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === "list" ? "bg-indigo-700 text-white" : "bg-slate-800 text-slate-400"}`}>
+          <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === "list" ? "bg-sage-700 text-white" : "bg-slate-800 text-slate-400"}`}>
             {totalListCount}
           </span>
         </button>
@@ -109,16 +109,16 @@ export function Header({
         <button
           type="button"
           onClick={() => onTabChange("suggestions")}
-          className={`min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 whitespace-nowrap ${
+          className={`min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-500/50 whitespace-nowrap ${
             activeTab === "suggestions"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+              ? "bg-sage-600 text-white shadow-md shadow-sage-950/40"
               : "bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-slate-800/80"
           }`}
         >
-          <Sparkles className="w-4 h-4 text-purple-400" />
+          <Sparkles className="w-4 h-4 text-terracotta-400" />
           <span>Smart Recommendations</span>
           {suggestionsCount > 0 && (
-            <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === "suggestions" ? "bg-indigo-700 text-white" : "bg-slate-800 text-slate-400"}`}>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === "suggestions" ? "bg-sage-700 text-white" : "bg-slate-800 text-slate-400"}`}>
               {suggestionsCount}
             </span>
           )}
@@ -127,9 +127,9 @@ export function Header({
         <button
           type="button"
           onClick={() => onTabChange("search")}
-          className={`min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 whitespace-nowrap ${
+          className={`min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-500/50 whitespace-nowrap ${
             activeTab === "search"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+              ? "bg-sage-600 text-white shadow-md shadow-sage-950/40"
               : "bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-slate-800/80"
           }`}
         >
@@ -140,9 +140,9 @@ export function Header({
         <button
           type="button"
           onClick={() => onTabChange("history")}
-          className={`min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 whitespace-nowrap ${
+          className={`min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-500/50 whitespace-nowrap ${
             activeTab === "history"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+              ? "bg-sage-600 text-white shadow-md shadow-sage-950/40"
               : "bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-slate-800/80"
           }`}
         >

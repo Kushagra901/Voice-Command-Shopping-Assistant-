@@ -17,10 +17,10 @@ export function CommandHistory({ logs, onClear }: CommandHistoryProps) {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
-        className="w-full min-h-[48px] px-4 py-3 flex items-center justify-between bg-slate-900/80 hover:bg-slate-900 transition cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+        className="w-full min-h-[48px] px-4 py-3 flex items-center justify-between bg-slate-900/80 hover:bg-slate-900 transition cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-sage-500/50"
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+          <div className="w-7 h-7 rounded-lg bg-sage-500/10 flex items-center justify-center text-sage-400">
             <History className="w-4 h-4" />
           </div>
           <div>
@@ -68,7 +68,7 @@ export function CommandHistory({ logs, onClear }: CommandHistoryProps) {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-slate-200">"{entry.rawText}"</span>
-                      <span className="px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-300 font-mono text-[10px] border border-indigo-800/40">
+                      <span className="px-2 py-0.5 rounded bg-sage-950/90 text-sage-300 font-mono text-[10px] border border-sage-800/60">
                         {entry.parsedCommand.intent}
                       </span>
                     </div>

@@ -34,7 +34,7 @@ const REASON_METADATA: Record<SuggestionReason, ReasonMeta> = {
   },
   substitute: {
     label: "Smart Alternative",
-    badgeClass: "bg-purple-950/80 text-purple-300 border-purple-800/40",
+    badgeClass: "bg-terracotta-950/80 text-terracotta-300 border-terracotta-800/40",
     renderIcon: (className = "w-3 h-3") => <ArrowRightLeft className={className} />
   }
 };
@@ -48,7 +48,7 @@ export function SuggestionsPanel({
     return (
       <div className="w-full rounded-3xl glass-panel p-5 border border-slate-800/80 space-y-4 shadow-xl">
         <div className="flex items-center gap-2.5">
-          <Sparkles className="w-4 h-4 text-indigo-400 animate-spin" />
+          <Sparkles className="w-4 h-4 text-sage-400 animate-spin" />
           <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
             Loading Recommendations...
           </span>
@@ -70,7 +70,7 @@ export function SuggestionsPanel({
     <div className="w-full rounded-3xl glass-panel p-5 border border-slate-800/80 space-y-4 shadow-xl">
       <div className="flex items-center justify-between flex-wrap gap-2.5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+          <div className="w-8 h-8 rounded-xl bg-sage-500/10 flex items-center justify-center text-sage-400 border border-sage-500/20">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
@@ -79,7 +79,7 @@ export function SuggestionsPanel({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-indigo-950/90 text-indigo-300 border border-indigo-800/40 font-semibold">
+          <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-sage-950/90 text-sage-300 border border-sage-800/40 font-semibold">
             Seeded Demo History
           </span>
           <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-medium">
@@ -101,7 +101,7 @@ export function SuggestionsPanel({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.2, delay: index * 0.04 }}
-                className="group p-4 rounded-2xl bg-slate-900/70 border border-slate-800/90 hover:border-indigo-500/40 transition-all duration-200 flex flex-col justify-between gap-3 shadow-sm hover:shadow-indigo-500/5"
+                className="group p-4 rounded-2xl bg-slate-900/70 border border-slate-800/90 hover:border-sage-500/40 transition-all duration-200 flex flex-col justify-between gap-3 shadow-sm hover:shadow-sage-950/20"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
@@ -117,7 +117,7 @@ export function SuggestionsPanel({
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-bold text-slate-100 group-hover:text-indigo-200 transition">
+                    <h4 className="text-sm font-bold text-slate-100 group-hover:text-sage-200 transition">
                       {sug.name}
                     </h4>
                     <p className="text-xs text-slate-400 leading-snug mt-1 line-clamp-2">
@@ -139,7 +139,7 @@ export function SuggestionsPanel({
                     type="button"
                     onClick={() => onAddSuggestion(sug)}
                     aria-label={`Add ${sug.name} to shopping list`}
-                    className="min-h-[44px] px-3.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600 border border-indigo-500/30 hover:border-indigo-500 text-indigo-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    className="min-h-[44px] px-3.5 rounded-xl bg-sage-600/20 hover:bg-sage-600 border border-sage-500/30 hover:border-sage-500 text-sage-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sage-500/50"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add to List</span>

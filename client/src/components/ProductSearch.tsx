@@ -67,7 +67,7 @@ export function ProductSearch({
     <div className="w-full rounded-3xl glass-panel p-5 border border-slate-800/80 space-y-4 shadow-xl">
       {/* Seeded Demo Product Banner */}
       {showSeededBanner && (
-        <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-indigo-500/25 text-slate-300 text-xs flex items-center justify-between gap-3 shadow-sm">
+        <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-sage-500/25 text-slate-300 text-xs flex items-center justify-between gap-3 shadow-sm">
           <div className="flex items-center gap-2.5">
             <span className="text-base flex-shrink-0">📦</span>
             <span>
@@ -87,7 +87,7 @@ export function ProductSearch({
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400 border border-sky-500/20">
+          <div className="w-8 h-8 rounded-xl bg-sage-500/10 flex items-center justify-center text-sage-400 border border-sage-500/20">
             <Search className="w-4 h-4" />
           </div>
           <div>
@@ -108,7 +108,7 @@ export function ProductSearch({
           value={query}
           onChange={(e) => handleQueryChange(e.target.value)}
           aria-label="Search product catalog"
-          className="w-full pl-10 pr-10 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50 shadow-inner"
+          className="w-full pl-10 pr-10 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sage-500/50 shadow-inner"
         />
         <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
         {query && (
@@ -134,7 +134,7 @@ export function ProductSearch({
               onClick={() => handleCategorySelect(cat)}
               className={`px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 min-h-[44px] shadow-sm ${
                 selectedCategory === cat
-                  ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sky-500/20"
+                  ? "bg-gradient-to-r from-sage-600 to-sage-700 text-white shadow-sage-950/30"
                   : "bg-slate-900/90 text-slate-400 hover:text-slate-200 border border-slate-800/90"
               }`}
             >

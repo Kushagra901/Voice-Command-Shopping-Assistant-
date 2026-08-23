@@ -9,7 +9,6 @@ import {
   Sparkles,
   RotateCcw,
   Languages,
-  ArrowRight,
   X,
   ListOrdered,
   History,
@@ -273,7 +272,7 @@ export function CommandPalette({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-xl rounded-3xl glass-panel bg-slate-900/95 border border-indigo-500/30 shadow-2xl shadow-indigo-950/50 overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-150"
+        className="w-full max-w-xl rounded-3xl glass-panel bg-slate-900/95 border border-sage-500/30 shadow-2xl shadow-sage-950/50 overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         <Command
@@ -288,7 +287,7 @@ export function CommandPalette({
         >
           {/* Search Header */}
           <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-800/80 bg-slate-900/60">
-            <Search className="w-5 h-5 text-indigo-400 flex-shrink-0" />
+            <Search className="w-5 h-5 text-sage-400 flex-shrink-0" />
             <Command.Input
               value={searchQuery}
               onValueChange={setSearchQuery}
@@ -329,20 +328,20 @@ export function CommandPalette({
               <Command.Item
                 value={`custom-execute-${searchQuery}`}
                 onSelect={handleCustomExecute}
-                className="group flex items-center justify-between p-3.5 rounded-2xl cursor-pointer text-xs sm:text-sm text-indigo-200 bg-indigo-950/40 border border-indigo-500/40 data-[selected=true]:bg-indigo-600 data-[selected=true]:text-white transition-all shadow-sm"
+                className="group flex items-center justify-between p-3.5 rounded-2xl cursor-pointer text-xs sm:text-sm text-sage-200 bg-sage-950/60 border border-sage-500/40 data-[selected=true]:bg-sage-600 data-[selected=true]:text-white transition-all shadow-sm"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-600/30 flex items-center justify-center text-indigo-300 group-data-[selected=true]:text-white flex-shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-sage-600/30 flex items-center justify-center text-sage-300 group-data-[selected=true]:text-white flex-shrink-0">
                     <CornerDownLeft className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
                     <div className="font-bold truncate">Execute: "{searchQuery}"</div>
-                    <div className="text-[11px] text-indigo-300/80 group-data-[selected=true]:text-white/80">
+                    <div className="text-[11px] text-sage-300/80 group-data-[selected=true]:text-white/80">
                       Send typed command to voice parser
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-indigo-900/60 border border-indigo-700/50 group-data-[selected=true]:bg-indigo-700 group-data-[selected=true]:text-white">
+                <div className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg bg-sage-900/60 border border-sage-700/50 group-data-[selected=true]:bg-sage-700 group-data-[selected=true]:text-white">
                   <span>Enter</span>
                   <CornerDownLeft className="w-3 h-3" />
                 </div>
@@ -372,10 +371,10 @@ export function CommandPalette({
                           key={cmd.id}
                           value={`${cmd.label} ${cmd.commandText} ${cmd.description} ${cmd.category}`}
                           onSelect={() => executeOption(cmd)}
-                          className="group flex items-center justify-between p-3 rounded-2xl cursor-pointer text-xs sm:text-sm text-slate-300 transition-all border border-transparent data-[selected=true]:bg-indigo-600/25 data-[selected=true]:border-indigo-500/40 data-[selected=true]:text-white"
+                          className="group flex items-center justify-between p-3 rounded-2xl cursor-pointer text-xs sm:text-sm text-slate-300 transition-all border border-transparent data-[selected=true]:bg-sage-600/25 data-[selected=true]:border-sage-500/40 data-[selected=true]:text-white"
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-slate-400 group-data-[selected=true]:bg-indigo-600 group-data-[selected=true]:text-white transition-colors flex-shrink-0">
+                            <div className="w-8 h-8 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-slate-400 group-data-[selected=true]:bg-sage-600 group-data-[selected=true]:text-white transition-colors flex-shrink-0">
                               <IconComponent className="w-4 h-4" />
                             </div>
                             <div className="min-w-0">
@@ -394,7 +393,9 @@ export function CommandPalette({
                                 "{cmd.commandText}"
                               </span>
                             )}
-                            <ArrowRight className="w-4 h-4 text-slate-500 group-data-[selected=true]:text-white transition-transform group-data-[selected=true]:translate-x-0.5" />
+                            <span className="text-[10px] px-2 py-0.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-400 font-mono group-data-[selected=true]:bg-sage-700 group-data-[selected=true]:text-white">
+                              {cmd.category}
+                            </span>
                           </div>
                         </Command.Item>
                       );

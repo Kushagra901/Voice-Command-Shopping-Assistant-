@@ -359,7 +359,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex flex-col justify-between p-4 sm:p-6 max-w-5xl mx-auto selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex flex-col justify-between p-4 sm:p-6 max-w-5xl mx-auto selection:bg-sage-600 selection:text-white">
       {/* Screen Reader Live Region */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {screenReaderAnnouncement}
@@ -435,7 +435,7 @@ export function App() {
         {/* Primary Voice Interaction Hub */}
         <section
           aria-labelledby="voice-control-heading"
-          className="w-full rounded-3xl glass-panel p-5 sm:p-7 border border-indigo-500/20 shadow-2xl space-y-5 relative overflow-hidden"
+          className="w-full rounded-3xl glass-panel p-5 sm:p-7 border border-sage-500/20 shadow-2xl space-y-5 relative overflow-hidden"
         >
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
@@ -453,13 +453,13 @@ export function App() {
                 )}
               </h2>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Say what you need in English or Hinglish — e.g. <em className="text-indigo-300">"Add 2 bottles of milk"</em> or <em className="text-indigo-300">"2 kilo aloo add kar do"</em>.
+                Say what you need in English or Hinglish — e.g. <em className="text-sage-300 font-medium">"Add 2 bottles of milk"</em> or <em className="text-sage-300 font-medium">"2 kilo aloo add kar do"</em>.
               </p>
             </div>
 
             {/* Quick Language Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <Sparkles className="w-3.5 h-3.5 text-terracotta-400" />
               <span>Bilingual Parser Active</span>
             </div>
           </div>
@@ -492,7 +492,7 @@ export function App() {
                     ? "bg-gradient-to-br from-rose-500 to-rose-700 text-white shadow-rose-500/30 ring-rose-500/50"
                     : voice.isSpeaking
                     ? "bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-emerald-500/30 ring-emerald-500/50"
-                    : "bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 hover:from-indigo-400 hover:to-indigo-600 text-white shadow-indigo-500/25 ring-indigo-500/40 hover:scale-105 active:scale-95"
+                    : "bg-gradient-to-br from-sage-600 via-sage-700 to-sage-800 hover:from-sage-500 hover:to-sage-700 text-white shadow-sage-950/40 ring-sage-500/40 hover:scale-105 active:scale-95"
                 }`}
               >
                 {voice.voiceState === "listening" ? (
@@ -549,7 +549,7 @@ export function App() {
 
             {/* Interim text in muted distinct styling per voice-ui-style §2 */}
             {voice.interimTranscript && (
-              <p className="text-sm text-indigo-300/80 italic py-0.5 animate-pulse">
+              <p className="text-sm text-terracotta-300/80 italic py-0.5 animate-pulse">
                 {voice.interimTranscript}
               </p>
             )}
@@ -574,7 +574,7 @@ export function App() {
                 value={manualText}
                 onChange={(e) => setManualText(e.target.value)}
                 aria-label="Text command input"
-                className="w-full pl-4 pr-24 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner"
+                className="w-full pl-4 pr-24 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sage-500/50 shadow-inner"
               />
               <div className="absolute right-2 top-1.5 flex items-center gap-1.5">
                 {!manualText && (
@@ -604,7 +604,7 @@ export function App() {
               type="submit"
               disabled={!manualText.trim() || executeCommandMutation.isPending}
               aria-label="Submit text command"
-              className="min-w-[44px] min-h-[44px] px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+              className="min-w-[44px] min-h-[44px] px-5 rounded-2xl bg-sage-600 hover:bg-sage-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-sage-950/40 flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
             >
               <Send className="w-4 h-4" />
               <span className="hidden sm:inline">Send</span>
@@ -622,9 +622,9 @@ export function App() {
                   key={ex.text}
                   type="button"
                   onClick={() => executeCommandMutation.mutate(ex.text)}
-                  className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500/40 text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer active:scale-95"
+                  className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-sage-500/40 text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer active:scale-95"
                 >
-                  <Sparkles className="w-3 h-3 text-indigo-400 flex-shrink-0" />
+                  <Sparkles className="w-3 h-3 text-terracotta-400 flex-shrink-0" />
                   <span>"{ex.text}"</span>
                 </button>
               ))}
@@ -643,14 +643,14 @@ export function App() {
               onClick={() => setActiveTab("list")}
               className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "list"
-                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  ? "bg-sage-600 text-white shadow-lg shadow-sage-950/40"
                   : "bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800"
               }`}
             >
               <span>Shopping List</span>
               <span
                 className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                  activeTab === "list" ? "bg-indigo-700 text-white" : "bg-slate-800 text-slate-300"
+                  activeTab === "list" ? "bg-sage-700 text-white" : "bg-slate-800 text-slate-300"
                 }`}
               >
                 {items.length}
@@ -662,14 +662,14 @@ export function App() {
               onClick={() => setActiveTab("suggestions")}
               className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "suggestions"
-                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  ? "bg-sage-600 text-white shadow-lg shadow-sage-950/40"
                   : "bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800"
               }`}
             >
               <span>Ideas</span>
               <span
                 className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                  activeTab === "suggestions" ? "bg-indigo-700 text-white" : "bg-slate-800 text-slate-300"
+                  activeTab === "suggestions" ? "bg-sage-700 text-white" : "bg-slate-800 text-slate-300"
                 }`}
               >
                 {suggestions.length}
@@ -681,14 +681,14 @@ export function App() {
               onClick={() => setActiveTab("search")}
               className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "search"
-                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  ? "bg-sage-600 text-white shadow-lg shadow-sage-950/40"
                   : "bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800"
               }`}
             >
               <span>Search</span>
               <span
                 className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                  activeTab === "search" ? "bg-indigo-700 text-white" : "bg-slate-800 text-slate-300"
+                  activeTab === "search" ? "bg-sage-700 text-white" : "bg-slate-800 text-slate-300"
                 }`}
               >
                 {products.length}
@@ -700,14 +700,14 @@ export function App() {
               onClick={() => setActiveTab("history")}
               className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "history"
-                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
+                  ? "bg-sage-600 text-white shadow-lg shadow-sage-950/40"
                   : "bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800"
               }`}
             >
               <span>History</span>
               <span
                 className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                  activeTab === "history" ? "bg-indigo-700 text-white" : "bg-slate-800 text-slate-300"
+                  activeTab === "history" ? "bg-sage-700 text-white" : "bg-slate-800 text-slate-300"
                 }`}
               >
                 {commandLogs.length}
