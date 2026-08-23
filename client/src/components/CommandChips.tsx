@@ -11,14 +11,14 @@ interface CommandChipsProps {
 }
 
 const INTENT_LABELS: Record<Intent, { label: string; color: string }> = {
-  ADD_ITEM: { label: "Add Item", color: "bg-sage-500/20 text-sage-300 border-sage-500/40" },
-  REMOVE_ITEM: { label: "Remove Item", color: "bg-rose-500/20 text-rose-300 border-rose-500/40" },
-  UPDATE_ITEM: { label: "Update Quantity", color: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
-  MARK_PURCHASED: { label: "Mark Done", color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
-  SEARCH_PRODUCT: { label: "Search Catalog", color: "bg-sky-500/20 text-sky-300 border-sky-500/40" },
-  GET_SUGGESTIONS: { label: "Get Ideas", color: "bg-terracotta-500/20 text-terracotta-300 border-terracotta-500/40" },
-  UNDO: { label: "Undo Action", color: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
-  UNKNOWN: { label: "Clarify Intent", color: "bg-slate-700/40 text-slate-300 border-slate-600" }
+  ADD_ITEM: { label: "Add Item", color: "bg-[#E8F5E9] text-[#0C2B21] border-emerald-200" },
+  REMOVE_ITEM: { label: "Remove Item", color: "bg-rose-50 text-rose-800 border-rose-200" },
+  UPDATE_ITEM: { label: "Update Quantity", color: "bg-amber-50 text-amber-900 border-amber-200" },
+  MARK_PURCHASED: { label: "Mark Done", color: "bg-[#E8F5E9] text-[#2E7D32] border-emerald-200" },
+  SEARCH_PRODUCT: { label: "Search Catalog", color: "bg-sky-50 text-sky-900 border-sky-200" },
+  GET_SUGGESTIONS: { label: "Get Ideas", color: "bg-purple-50 text-purple-900 border-purple-200" },
+  UNDO: { label: "Undo Action", color: "bg-amber-50 text-amber-900 border-amber-200" },
+  UNKNOWN: { label: "Clarify Intent", color: "bg-slate-100 text-slate-700 border-slate-200" }
 };
 
 export function CommandChips({
@@ -56,15 +56,15 @@ export function CommandChips({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: -8 }}
       transition={{ duration: 0.18 }}
-      className="w-full max-w-xl mx-auto rounded-3xl glass-panel p-5 border border-sage-500/40 shadow-2xl space-y-3.5 glow-sage"
+      className="w-full rounded-2xl bg-white p-4 sm:p-5 border border-emerald-200 shadow-sm space-y-3"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-terracotta-400" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <Sparkles className="w-4 h-4 text-emerald-600" />
+          <span className="text-xs font-black uppercase tracking-wider text-slate-700">
             Parsed Command Preview
           </span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+          <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold">
             Confidence: {Math.round(parsedCommand.confidence * 100)}%
           </span>
         </div>
@@ -72,47 +72,47 @@ export function CommandChips({
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss command preview"
-          className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100 transition cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* Raw Transcript Quote */}
-      <p className="text-xs text-slate-400 italic">
+      <p className="text-xs text-slate-500 italic">
         "{parsedCommand.rawText}"
       </p>
 
       {/* Interactive Editable Chips */}
       <div className="flex flex-wrap items-center gap-2 pt-1">
         {/* Intent Chip */}
-        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium ${intentMeta.color}`}>
+        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-black ${intentMeta.color}`}>
           <Tag className="w-3.5 h-3.5" />
           {intentMeta.label}
         </div>
 
         {/* Item Name Chip (Editable) */}
         {parsedCommand.itemName && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700 text-xs font-medium text-slate-100">
-            <Package className="w-3.5 h-3.5 text-sage-400" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800">
+            <Package className="w-3.5 h-3.5 text-emerald-600" />
             {isEditing ? (
               <input
                 type="text"
                 value={editedItem}
                 onChange={(e) => setEditedItem(e.target.value)}
-                className="bg-slate-900 px-1 py-0.5 rounded border border-sage-500 text-white text-xs w-28 focus:outline-none"
+                className="bg-white px-1.5 py-0.5 rounded border border-emerald-500 text-slate-900 text-xs w-28 focus:outline-none"
                 aria-label="Edit item name"
               />
             ) : (
-              <span className="font-semibold text-sage-200">{editedItem}</span>
+              <span>{editedItem}</span>
             )}
           </div>
         )}
 
         {/* Quantity Chip (Editable) */}
         {parsedCommand.quantity !== undefined && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700 text-xs font-medium text-slate-100">
-            <Hash className="w-3.5 h-3.5 text-amber-400" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800">
+            <Hash className="w-3.5 h-3.5 text-amber-600" />
             {isEditing ? (
               <input
                 type="number"
@@ -120,29 +120,29 @@ export function CommandChips({
                 step="any"
                 value={editedQuantity}
                 onChange={(e) => setEditedQuantity(parseFloat(e.target.value) || 1)}
-                className="bg-slate-900 px-1 py-0.5 rounded border border-sage-500 text-white text-xs w-16 focus:outline-none"
+                className="bg-white px-1.5 py-0.5 rounded border border-emerald-500 text-slate-900 text-xs w-16 focus:outline-none"
                 aria-label="Edit quantity"
               />
             ) : (
               <span>{editedQuantity}</span>
             )}
-            <span className="text-slate-400">{editedUnit}</span>
+            <span className="text-slate-500">{editedUnit}</span>
           </div>
         )}
 
         {/* Brand Chip */}
         {parsedCommand.brand && (
-          <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300">
-            <span className="text-slate-500">Brand:</span>
-            <span className="text-slate-200 font-medium">{parsedCommand.brand}</span>
+          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-700 font-semibold">
+            <span className="text-slate-400">Brand:</span>
+            <span>{parsedCommand.brand}</span>
           </div>
         )}
 
         {/* Price Constraint Chip */}
         {parsedCommand.maxPrice !== undefined && (
-          <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300">
-            <span className="text-slate-500">Max:</span>
-            <span className="text-emerald-400 font-medium">${parsedCommand.maxPrice}</span>
+          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-700 font-semibold">
+            <span className="text-slate-400">Max:</span>
+            <span className="text-emerald-700 font-bold">${parsedCommand.maxPrice}</span>
           </div>
         )}
 
@@ -150,26 +150,26 @@ export function CommandChips({
         <button
           type="button"
           onClick={() => setIsEditing(!isEditing)}
-          className="text-xs text-sage-400 hover:text-sage-300 underline underline-offset-2 px-1 cursor-pointer py-1"
+          className="text-xs text-emerald-800 hover:text-emerald-950 font-bold underline underline-offset-2 px-1 cursor-pointer py-1"
         >
           {isEditing ? "Done editing" : "Edit values"}
         </button>
       </div>
 
       {parsedCommand.intent === "UNKNOWN" && (
-        <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-950/40 border border-amber-800/40 text-amber-300 text-xs">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 text-amber-600" />
           <span>Could not determine shopping action. Try saying "Add milk" or "Remove apples".</span>
         </div>
       )}
 
-      {/* Action Buttons (Tap targets >= 44x44px per accessibility) */}
-      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/80">
+      {/* Action Buttons */}
+      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
         <button
           type="button"
           onClick={onDismiss}
           disabled={isExecuting}
-          className="min-h-[44px] px-4 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 transition cursor-pointer"
+          className="min-h-[38px] px-4 rounded-full text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
         >
           Dismiss
         </button>
@@ -179,10 +179,10 @@ export function CommandChips({
             type="button"
             onClick={handleConfirm}
             disabled={isExecuting}
-            className="min-h-[44px] px-5 rounded-xl bg-gradient-to-r from-sage-600 to-sage-700 hover:from-sage-500 hover:to-sage-600 text-white text-xs font-semibold shadow-md hover:shadow-sage-950/40 flex items-center gap-1.5 transition active:scale-95 cursor-pointer disabled:opacity-50"
+            className="min-h-[38px] px-5 rounded-full bg-[#0C2B21] hover:bg-emerald-950 text-white text-xs font-bold shadow-md flex items-center gap-1.5 transition active:scale-95 cursor-pointer disabled:opacity-50"
           >
-            <Check className="w-4 h-4" />
-            {isExecuting ? "Executing..." : "Execute Command"}
+            <Check className="w-3.5 h-3.5 text-lime-400" />
+            <span>{isExecuting ? "Executing..." : "Execute Command"}</span>
           </button>
         )}
       </div>

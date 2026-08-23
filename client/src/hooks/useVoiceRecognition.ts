@@ -51,7 +51,14 @@ export function useVoiceRecognition({ onCommandFinalized, lang = "en-IN" }: UseV
   const recognitionRef = useRef<IWindowSpeechRecognition | null>(null);
   const isListeningRef = useRef<boolean>(false);
 
-  // Initialize SpeechRecognition on client
+  // Store onCommandFinalized in a ref so the SpeechRecognition instance
+  // doesn't get torn down and recreated every time the callback identity changes
+  const onCommandFinalizedRef = useRef(onCommandFinalized);
+  useEffect(() => {
+    onCommandFinalizedRef.current = onCommandFinalized;
+  }, [onCommandFinalized]);
+
+  // Initialize SpeechRecognition on client — only depends on `lang`, not on callback identity
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -100,14 +107,22 @@ export function useVoiceRecognition({ onCommandFinalized, lang = "en-IN" }: UseV
           setFinalTranscript(trimmed);
           setInterimTranscript("");
           setVoiceState("processing");
-          if (onCommandFinalized) {
-            onCommandFinalized(trimmed);
-          }
+          // Read from ref — always calls the latest callback without re-creating recognition
+          onCommandFinalizedRef.current?.(trimmed);
         }
       };
 
       recognition.onerror = (event) => {
         isListeningRef.current = false;
+
+        // 'aborted' fires when recognition is programmatically stopped or restarted
+        // — this is not a user-facing error, so silently reset to idle
+        if (event.error === "aborted") {
+          setInterimTranscript("");
+          setVoiceState("idle");
+          return;
+        }
+
         setVoiceState("error");
         setInterimTranscript("");
 
@@ -153,7 +168,8 @@ export function useVoiceRecognition({ onCommandFinalized, lang = "en-IN" }: UseV
 
       recognition.onend = () => {
         isListeningRef.current = false;
-        setVoiceState((prev) => (prev === "listening" ? "idle" : prev));
+        // Reset to idle from listening or error (in case of a non-critical error like aborted)
+        setVoiceState((prev) => (prev === "listening" || prev === "error" ? "idle" : prev));
       };
 
       recognitionRef.current = recognition;
@@ -171,7 +187,7 @@ export function useVoiceRecognition({ onCommandFinalized, lang = "en-IN" }: UseV
         }
       }
     };
-  }, [lang, onCommandFinalized]);
+  }, [lang]);
 
   const startListening = useCallback(() => {
     if (!recognitionRef.current) return;
@@ -185,7 +201,7 @@ export function useVoiceRecognition({ onCommandFinalized, lang = "en-IN" }: UseV
       // If already started, stop and restart
       try {
         recognitionRef.current.stop();
-        setTimeout(() => recognitionRef.current?.start(), 150);
+        setTimeout(() => recognitionRef.current?.start(), 200);
       } catch {
         // Ignore
       }
@@ -266,3 +282,4 @@ export function useVoiceRecognition({ onCommandFinalized, lang = "en-IN" }: UseV
     speak
   };
 }
+
