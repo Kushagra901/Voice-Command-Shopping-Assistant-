@@ -16,7 +16,7 @@
     "db:seed": "tsx drizzle/seed.ts"
   },
   "dependencies": {
-    "@libsql/client": "^0.14.0",
+    "@libsql/client": "^0.17.4",
     "@voice-shopping/shared": "*",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
