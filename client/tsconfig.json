@@ -13,7 +13,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@voice-shopping/shared": ["../shared/dist/types/index.d.ts"]
+      "@voice-shopping/shared": ["../shared/src/types/index.ts", "../shared/dist/types/index.d.ts"]
     }
   },
   "include": ["src"],

@@ -6,7 +6,7 @@
     "moduleResolution": "NodeNext",
     "types": ["node", "vitest/globals"],
     "paths": {
-      "@voice-shopping/shared": ["../shared/dist/types/index.d.ts"]
+      "@voice-shopping/shared": ["../shared/src/types/index.ts", "../shared/dist/types/index.d.ts"]
     }
   },
   "include": ["src/**/*", "drizzle/**/*", "drizzle.config.ts", "vitest.config.ts"],
