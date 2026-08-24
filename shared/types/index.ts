@@ -144,7 +144,7 @@ export interface CategoryDetail {
 
 export interface HealthStatus {
   status: "healthy" | "degraded" | "unhealthy";
-  database: "connected" | "fallback" | "disconnected";
+  database: "connected" | "fallback" | "disconnected" | "local-storage";
   timestamp: string;
   uptimeSeconds: number;
 }

@@ -63,7 +63,7 @@ export function Header({
               </span>
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] bg-white/10 text-emerald-200 border border-white/10 font-semibold">
                 <Database className="w-3 h-3 text-amber-400" />
-                {health?.database === "connected" ? "Turso Cloud" : "Local libSQL"}
+                {health?.database === "connected" ? "Turso Cloud" : health?.database === "local-storage" ? "Browser Storage" : "Local libSQL"}
               </span>
             </div>
           )}

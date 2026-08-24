@@ -17,7 +17,9 @@
     "test:server": "npm --prefix server run test",
     "test:client": "npm --prefix client run test",
     "typecheck": "npm --prefix shared run build && npm --prefix server run typecheck && npm --prefix client run typecheck",
-    "audit": "npm audit --audit-level=high"
+    "audit": "npm audit --audit-level=high",
+    "build:client": "npm --prefix shared run build && npm --prefix client run build",
+    "deploy:firebase": "npm run build && npx -p firebase-tools firebase deploy --only hosting"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

@@ -1,5 +1,8 @@
 # 🎙️ Voice Command Shopping Assistant
 
+[![Live Application](https://img.shields.io/badge/🚀_Live_Demo-voice--shopping--app--2026.web.app-0C2B21?style=for-the-badge&logo=firebase&logoColor=FFCA28)](https://voice-shopping-app-2026.web.app)
+[![GitHub Repository](https://img.shields.io/badge/📦_GitHub_Repo-Voice--Command--Shopping--Assistant--181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Kushagra901/Voice-Command-Shopping-Assistant-)
+
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB.svg?style=flat-square&logo=react)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express-4.21-000000.svg?style=flat-square&logo=express)](https://expressjs.com/)
@@ -8,6 +11,11 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC.svg?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
 [![Vitest](https://img.shields.io/badge/Tests-75%20Passing-brightgreen.svg?style=flat-square&logo=vitest)](https://vitest.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+
+> 🔗 **Live Links & Quick Access:**
+> - 🌐 **Live Web Application:** **[https://voice-shopping-app-2026.web.app](https://voice-shopping-app-2026.web.app)** *(Full HTTPS Web Speech & Web Audio PWA)*
+> - 📂 **Source Code Repository:** **[https://github.com/Kushagra901/Voice-Command-Shopping-Assistant-](https://github.com/Kushagra901/Voice-Command-Shopping-Assistant-)**
+> - ⚡ **Alternative Domain:** **[https://voice-shopping-app-2026.firebaseapp.com](https://voice-shopping-app-2026.firebaseapp.com)**
 
 A modern, voice-first shopping assistant web application engineered with natural language understanding (NLU), **Hinglish** (Hindi-English code-switching) bilingual parsing, real-time Web Audio frequency waveform visualization, smart product recommendations, in-place interactive spotlight onboarding, and offline-resilient PWA synchronization.
 
@@ -391,7 +399,12 @@ npm run test
 
 ## 🌐 Production Deployment Blueprint
 
-### 1. Database — Turso (libSQL Cloud)
+### 1. Frontend — Firebase Hosting (Live Production)
+- **Live URL:** **[https://voice-shopping-app-2026.web.app](https://voice-shopping-app-2026.web.app)**
+- **Deploy Command:** `npm run deploy:firebase`
+- **Config:** [`firebase.json`](file:///d:/voice%20commanding/firebase.json) and [`.firebaserc`](file:///d:/voice%20commanding/.firebaserc) with SPA rewrites to `/index.html` and 1-year immutable caching for static assets.
+
+### 2. Database — Turso (libSQL Cloud)
 1. Install Turso CLI: `curl -sSfL https://get.tur.so/install.sh | bash`
 2. Create a free database: `turso db create voice-shopping-db`
 3. Retrieve database URL and authentication token:
@@ -400,27 +413,18 @@ npm run test
    turso db tokens create voice-shopping-db
    ```
 
-### 2. Backend — Render (Free Web Service)
-1. Create a **New Web Service** connected to your repository.
-2. Configure settings:
-   - **Root Directory:** `server`
-   - **Build Command:** `npm install && npm run build`
-   - **Start Command:** `npm run start`
-3. Add Environment Variables:
-   - `NODE_ENV` = `production`
-   - `PORT` = `10000`
-   - `TURSO_DATABASE_URL` = `libsql://your-db-name.turso.io`
-   - `TURSO_AUTH_TOKEN` = `your-turso-auth-token`
-
-### 3. Frontend — Vercel
-1. Import repository on [Vercel](https://vercel.com).
-2. Configure settings:
-   - **Root Directory:** `client`
-   - **Framework Preset:** `Vite`
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `dist`
-3. Add Environment Variables:
-   - `VITE_API_URL` = `https://your-backend.onrender.com`
+### 3. Backend API — Google Cloud Run / Render
+- **Google Cloud Run (Recommended for Firebase projects):**
+  ```bash
+  gcloud builds submit --tag gcr.io/voice-shopping-app-2026/voice-shopping-api
+  gcloud run deploy voice-shopping-api \
+    --image gcr.io/voice-shopping-app-2026/voice-shopping-api \
+    --platform managed --region us-central1 --allow-unauthenticated
+  ```
+- **Render / Railway Web Service:**
+  - Build: `npm ci && npm --prefix shared run build && npm --prefix server run build`
+  - Start: `node server/dist/index.js`
+  - Env: `NODE_ENV=production`, `PORT=3001`, `CLIENT_ORIGIN=https://voice-shopping-app-2026.web.app`
 
 ---
 
